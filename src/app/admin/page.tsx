@@ -2,15 +2,12 @@ import Link from "next/link";
 import {
   BadgeDollarSign,
   ShoppingCart,
-  Undo2,
-  Package,
   Users,
   BookOpen,
   Mail,
+  CreditCard,
   ArrowUpRight,
   Trophy,
-  Eye,
-  CreditCard,
 } from "lucide-react";
 import { adminContainer } from "@/infrastructure/di/container";
 import { formatDate, formatPrice } from "@/lib/utils";
@@ -26,10 +23,10 @@ interface LeadRow {
   created_at: string;
 }
 
-/** Visão geral do admin — métricas + atividade recente. */
 export default async function AdminHomePage() {
   const c = adminContainer();
-  const [purchases, products, profiles, progressRes, leadsRes, { data: authList }] =
+
+  const [purchases, products, profiles, progressRes, leadsRes, subscriptions, { data: authList }] =
     await Promise.all([
       c.purchases.listAll(2000),
       c.products.listAll(),
@@ -41,15 +38,18 @@ export default async function AdminHomePage() {
         .order("created_at", { ascending: false })
         .limit(6)
         .returns<LeadRow[]>(),
+      c.subscriptions.listAll(200),
       c.db.auth.admin.listUsers({ page: 1, perPage: 1000 }),
     ]);
 
   const paid = purchases.filter((p) => p.status === "paid");
   const revenue = paid.reduce((sum, p) => sum + p.amount, 0);
-  const refunded = purchases.filter((p) => p.status === "refunded").length;
   const progress = progressRes.data ?? [];
   const opens = progress.reduce((s, p) => s + (p.open_count ?? 0), 0);
   const leads = leadsRes.data ?? [];
+  const activeSubs = subscriptions.filter(
+    (s) => s.status === "active" || s.status === "trialing",
+  ).length;
 
   const productById = new Map(products.map((p) => [p.id, p]));
   const profileById = new Map(profiles.map((p) => [p.id, p]));
@@ -57,223 +57,272 @@ export default async function AdminHomePage() {
     (authList?.users ?? []).map((u) => [u.id, u.email ?? "—"]),
   );
 
-  const recentPurchases = purchases.slice(0, 6);
+  const recentPurchases = purchases.slice(0, 8);
   const topReaders = [...progress]
     .sort((a, b) => (b.open_count ?? 0) - (a.open_count ?? 0))
     .slice(0, 5);
 
   const stats = [
     {
-      label: "Receita",
+      label: "Receita total",
       value: formatPrice(revenue),
       icon: BadgeDollarSign,
       href: "/admin/purchases",
-      accent: "text-emerald-500 bg-emerald-500/10",
+      color: "#22c55e",
+      bg: "rgba(34,197,94,0.1)",
     },
     {
       label: "Vendas pagas",
       value: String(paid.length),
       icon: ShoppingCart,
       href: "/admin/purchases",
-      accent: "text-[var(--royal)] bg-[color-mix(in_oklab,var(--royal)_12%,transparent)]",
+      color: "#5d87ff",
+      bg: "rgba(93,135,255,0.1)",
     },
     {
-      label: "Reembolsos",
-      value: String(refunded),
-      icon: Undo2,
-      href: "/admin/purchases",
-      accent: "text-amber-500 bg-amber-500/10",
-    },
-    {
-      label: "Produtos ativos",
-      value: String(products.filter((p) => p.active).length),
-      icon: Package,
-      href: "/admin/products",
-      accent: "text-violet-500 bg-violet-500/10",
+      label: "Assinaturas ativas",
+      value: String(activeSubs),
+      icon: CreditCard,
+      href: "/admin/subscriptions",
+      color: "#8754ec",
+      bg: "rgba(135,84,236,0.1)",
     },
     {
       label: "Usuários",
       value: String(profiles.length),
       icon: Users,
       href: "/admin/users",
-      accent: "text-sky-500 bg-sky-500/10",
+      color: "#49beff",
+      bg: "rgba(73,190,255,0.1)",
     },
     {
       label: "Aberturas do livro",
       value: String(opens),
       icon: BookOpen,
       href: "/admin/access",
-      accent: "text-rose-500 bg-rose-500/10",
+      color: "#FF4D2D",
+      bg: "rgba(255,77,45,0.1)",
     },
     {
-      label: "Leads",
+      label: "Leads capturados",
       value: String(leads.length >= 6 ? "6+" : leads.length),
       icon: Mail,
       href: "/admin/leads",
-      accent: "text-teal-500 bg-teal-500/10",
-    },
-    {
-      label: "Páginas do livro",
-      value: "Preview",
-      icon: Eye,
-      href: "/admin/pages",
-      accent: "text-indigo-500 bg-indigo-500/10",
-    },
-    {
-      label: "Assinaturas",
-      value: "Gerenciar",
-      icon: CreditCard,
-      href: "/admin/subscriptions",
-      accent: "text-purple-500 bg-purple-500/10",
+      color: "#13deb9",
+      bg: "rgba(19,222,185,0.1)",
     },
   ];
 
-  const statusStyles: Record<string, string> = {
-    paid: "bg-emerald-500/10 text-emerald-600",
-    refunded: "bg-amber-500/10 text-amber-600",
-    pending: "bg-blue-500/10 text-blue-600",
-    failed: "bg-red-500/10 text-red-600",
+  const purchaseStatusColor: Record<string, string> = {
+    paid: "#22c55e",
+    refunded: "#f6b51e",
+    pending: "#49beff",
+    failed: "#ef4444",
   };
 
   return (
-    <div>
-      <div className="flex items-end justify-between">
-        <div>
+    <div className="space-y-6">
+      {/* ── Welcome banner ── */}
+      <div
+        className="relative overflow-hidden rounded-2xl border border-border bg-card p-6"
+        style={{
+          background:
+            "linear-gradient(135deg, color-mix(in oklab, var(--royal) 8%, var(--card)), var(--card))",
+        }}
+      >
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -right-20 -top-20 h-56 w-56 rounded-full blur-3xl"
+          style={{ background: "color-mix(in oklab, var(--royal) 20%, transparent)" }}
+        />
+        <div className="relative">
           <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-muted-foreground">
-            Dashboard
+            Painel Administrativo
           </p>
-          <h1 className="mt-1 font-display text-3xl font-semibold">Visão geral</h1>
+          <h1 className="mt-1 font-display text-2xl font-bold text-foreground sm:text-3xl">
+            Visão Geral 🥋
+          </h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Atualizado em {formatDate(new Date())}
+          </p>
         </div>
-        <p className="text-xs text-muted-foreground">
-          Atualizado {formatDate(new Date())}
-        </p>
       </div>
 
-      {/* Stats */}
-      <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      {/* ── Top stat cards ── */}
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         {stats.map((s) => (
-          <Link key={s.label} href={s.href} className="group">
-            <div className="h-full rounded-2xl border border-border bg-card p-5 transition group-hover:-translate-y-0.5 group-hover:border-[var(--royal)]/40 group-hover:shadow-md">
-              <div className="flex items-center justify-between">
-                <div className={`grid h-10 w-10 place-items-center rounded-xl ${s.accent}`}>
-                  <s.icon className="h-5 w-5" />
-                </div>
-                <ArrowUpRight className="h-4 w-4 text-muted-foreground/40 transition group-hover:text-[var(--royal)]" />
+          <Link key={s.label} href={s.href} className="group block">
+            <div className="flex items-center gap-4 rounded-2xl border border-border bg-card p-5 transition-all hover:border-[var(--royal)]/30 hover:shadow-md hover:-translate-y-0.5">
+              <div
+                className="grid h-12 w-12 shrink-0 place-items-center rounded-xl"
+                style={{ background: s.bg }}
+              >
+                <s.icon className="h-5 w-5" style={{ color: s.color }} />
               </div>
-              <p className="mt-4 font-display text-2xl font-semibold tracking-tight">
-                {s.value}
-              </p>
-              <p className="mt-0.5 text-xs font-medium uppercase tracking-widest text-muted-foreground">
-                {s.label}
-              </p>
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
+                  {s.label}
+                </p>
+                <p className="mt-0.5 font-display text-2xl font-bold text-foreground">
+                  {s.value}
+                </p>
+              </div>
+              <ArrowUpRight
+                className="h-4 w-4 shrink-0 text-muted-foreground/30 transition group-hover:text-[var(--royal)]"
+              />
             </div>
           </Link>
         ))}
       </div>
 
-      {/* Atividade */}
-      <div className="mt-8 grid gap-4 lg:grid-cols-3">
-        {/* Últimas vendas */}
-        <div className="rounded-2xl border border-border bg-card p-5 lg:col-span-2">
-          <div className="flex items-center justify-between">
-            <h2 className="font-display text-lg font-semibold">Últimas vendas</h2>
-            <Link href="/admin/purchases" className="text-xs font-medium text-[var(--royal)] hover:underline">
-              Ver todas
+      {/* ── Activity grid ── */}
+      <div className="grid gap-4 lg:grid-cols-3">
+        {/* Recent purchases - takes 2 cols */}
+        <div className="overflow-hidden rounded-2xl border border-border bg-card lg:col-span-2">
+          <div className="flex items-center justify-between border-b border-border px-5 py-4">
+            <h2 className="font-display text-base font-semibold">Últimas vendas</h2>
+            <Link
+              href="/admin/purchases"
+              className="text-xs font-medium transition hover:underline"
+              style={{ color: "var(--royal)" }}
+            >
+              Ver todas →
             </Link>
           </div>
-          <div className="mt-4 space-y-2">
-            {recentPurchases.map((p) => (
-              <div
-                key={p.id}
-                className="flex items-center justify-between gap-3 rounded-xl border border-border/60 px-4 py-3"
-              >
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-medium">
-                    {emailById.get(p.userId) ?? p.userId}
-                  </p>
-                  <p className="truncate text-xs text-muted-foreground">
-                    {productById.get(p.productId)?.title ?? "—"} ·{" "}
-                    {formatDate(p.createdAt)}
-                  </p>
-                </div>
-                <div className="flex shrink-0 items-center gap-2">
-                  <span className="text-sm font-semibold">
-                    {formatPrice(p.amount, p.currency.toUpperCase())}
-                  </span>
-                  <span
-                    className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${statusStyles[p.status] ?? ""}`}
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border text-left text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                  <th className="px-5 py-3">Cliente</th>
+                  <th className="px-5 py-3">Produto</th>
+                  <th className="px-5 py-3">Valor</th>
+                  <th className="px-5 py-3">Status</th>
+                  <th className="px-5 py-3">Data</th>
+                </tr>
+              </thead>
+              <tbody>
+                {recentPurchases.map((p) => (
+                  <tr
+                    key={p.id}
+                    className="border-b border-border/50 transition last:border-0 hover:bg-accent/30"
                   >
-                    {p.status}
-                  </span>
-                </div>
-              </div>
-            ))}
-            {recentPurchases.length === 0 ? (
-              <p className="py-8 text-center text-sm text-muted-foreground">
-                Nenhuma venda ainda.
-              </p>
-            ) : null}
+                    <td className="px-5 py-3">
+                      <p className="max-w-[160px] truncate text-xs font-medium text-foreground">
+                        {emailById.get(p.userId) ?? p.userId}
+                      </p>
+                    </td>
+                    <td className="px-5 py-3">
+                      <p className="max-w-[120px] truncate text-xs text-muted-foreground">
+                        {productById.get(p.productId)?.title ?? "—"}
+                      </p>
+                    </td>
+                    <td className="px-5 py-3">
+                      <p className="text-xs font-semibold text-foreground">
+                        {formatPrice(p.amount, p.currency.toUpperCase())}
+                      </p>
+                    </td>
+                    <td className="px-5 py-3">
+                      <span
+                        className="rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-white"
+                        style={{
+                          background: purchaseStatusColor[p.status] ?? "#a1a1aa",
+                        }}
+                      >
+                        {p.status}
+                      </span>
+                    </td>
+                    <td className="px-5 py-3 text-xs text-muted-foreground">
+                      {formatDate(p.createdAt)}
+                    </td>
+                  </tr>
+                ))}
+                {recentPurchases.length === 0 && (
+                  <tr>
+                    <td colSpan={5} className="px-5 py-10 text-center text-sm text-muted-foreground">
+                      Nenhuma venda ainda.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
           </div>
         </div>
 
+        {/* Right column */}
         <div className="space-y-4">
-          {/* Top leitores */}
+          {/* Top readers */}
           <div className="rounded-2xl border border-border bg-card p-5">
-            <h2 className="flex items-center gap-2 font-display text-lg font-semibold">
-              <Trophy className="h-4 w-4 text-[var(--gold)]" /> Top leitores
+            <h2 className="flex items-center gap-2 font-display text-base font-semibold">
+              <Trophy className="h-4 w-4" style={{ color: "var(--gold)" }} />
+              Top leitores
             </h2>
-            <div className="mt-3 space-y-2">
+            <ul className="mt-4 space-y-3">
               {topReaders.map((p, i) => (
-                <div key={`${p.user_id}-${p.product_id}`} className="flex items-center gap-3">
-                  <span className="w-5 text-center font-display text-sm font-semibold text-muted-foreground">
+                <li
+                  key={`${p.user_id}-${p.product_id}`}
+                  className="flex items-center gap-3"
+                >
+                  <span
+                    className="grid h-7 w-7 shrink-0 place-items-center rounded-full text-[11px] font-bold"
+                    style={{
+                      background:
+                        i === 0
+                          ? "linear-gradient(135deg,#FF4D2D,#ff7a5c)"
+                          : "color-mix(in oklab, var(--royal) 10%, transparent)",
+                      color: i === 0 ? "#fff" : "var(--royal)",
+                    }}
+                  >
                     {i + 1}
                   </span>
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium">
+                    <p className="truncate text-xs font-medium text-foreground">
                       {profileById.get(p.user_id)?.name ??
                         emailById.get(p.user_id) ??
                         "—"}
                     </p>
                   </div>
-                  <span className="shrink-0 text-xs text-muted-foreground">
+                  <span className="shrink-0 text-[11px] text-muted-foreground">
                     {p.open_count ?? 0}×
                   </span>
-                </div>
+                </li>
               ))}
-              {topReaders.length === 0 ? (
-                <p className="py-4 text-center text-sm text-muted-foreground">
+              {topReaders.length === 0 && (
+                <p className="py-4 text-center text-xs text-muted-foreground">
                   Sem leituras ainda.
                 </p>
-              ) : null}
-            </div>
+              )}
+            </ul>
           </div>
 
-          {/* Últimos leads */}
+          {/* Recent leads */}
           <div className="rounded-2xl border border-border bg-card p-5">
             <div className="flex items-center justify-between">
-              <h2 className="font-display text-lg font-semibold">Últimos leads</h2>
-              <Link href="/admin/leads" className="text-xs font-medium text-[var(--royal)] hover:underline">
-                Ver todos
+              <h2 className="font-display text-base font-semibold">Últimos leads</h2>
+              <Link
+                href="/admin/leads"
+                className="text-xs font-medium transition hover:underline"
+                style={{ color: "var(--royal)" }}
+              >
+                Ver todos →
               </Link>
             </div>
-            <div className="mt-3 space-y-2">
+            <ul className="mt-4 space-y-3">
               {leads.map((l) => (
-                <div key={l.id} className="min-w-0">
-                  <p className="truncate text-sm font-medium">
-                    {l.name ? `${l.name} · ` : ""}
-                    {l.email}
+                <li key={l.id} className="min-w-0">
+                  <p className="truncate text-xs font-medium text-foreground">
+                    {l.name ? `${l.name}` : l.email}
                   </p>
-                  <p className="text-xs text-muted-foreground">
-                    {l.source} · {formatDate(l.created_at)}
+                  <p className="text-[10px] text-muted-foreground">
+                    {l.email} · {l.source}
                   </p>
-                </div>
+                </li>
               ))}
-              {leads.length === 0 ? (
-                <p className="py-4 text-center text-sm text-muted-foreground">
+              {leads.length === 0 && (
+                <p className="py-4 text-center text-xs text-muted-foreground">
                   Nenhum lead ainda.
                 </p>
-              ) : null}
-            </div>
+              )}
+            </ul>
           </div>
         </div>
       </div>
