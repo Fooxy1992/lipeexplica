@@ -41,10 +41,13 @@ export default async function BookPage({ params }: PageProps) {
         if (rpcError) logger.warn("book.access_log_failed", { error: rpcError.message });
       });
 
+    // Non-fatal: analytics failure must never break the book reader
     await c.trackAnalyticsEvent.execute({
       userId: user.id,
       event: 'book.opened',
       properties: { productId: product.id, accessLevel },
+    }).catch((trackErr) => {
+      logger.warn('book.analytics_track_failed', { error: String(trackErr) });
     });
 
     return (

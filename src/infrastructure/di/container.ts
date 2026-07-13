@@ -124,7 +124,6 @@ export function adminContainer() {
     ),
     handleSubscriptionWebhook: new HandleSubscriptionWebhook(
       repos.products,
-      repos.purchases,
       repos.subscriptions,
       repos.profiles,
       auth,

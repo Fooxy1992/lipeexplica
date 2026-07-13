@@ -1,6 +1,6 @@
 export type SubscriptionStatus =
   | 'active' | 'canceled' | 'past_due' | 'unpaid'
-  | 'incomplete' | 'trialing' | 'paused';
+  | 'incomplete' | 'incomplete_expired' | 'trialing' | 'paused';
 
 export interface Subscription {
   id: string;

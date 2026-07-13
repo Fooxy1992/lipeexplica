@@ -1,6 +1,6 @@
 import type Stripe from 'stripe';
+import type { SubscriptionStatus } from '@/core/domain/entities/subscription';
 import type { ProductRepository } from '@/core/application/ports/product-repository';
-import type { PurchaseRepository } from '@/core/application/ports/purchase-repository';
 import type { SubscriptionRepository } from '@/core/application/ports/subscription-repository';
 import type { ProfileRepository } from '@/core/application/ports/profile-repository';
 import type { AuthGateway } from '@/core/application/ports/auth-gateway';
@@ -9,7 +9,6 @@ import type { Logger } from '@/core/application/ports/logger';
 export class HandleSubscriptionWebhook {
   constructor(
     private readonly products: ProductRepository,
-    private readonly purchases: PurchaseRepository,
     private readonly subscriptions: SubscriptionRepository,
     private readonly profiles: ProfileRepository,
     private readonly auth: AuthGateway,
@@ -42,20 +41,8 @@ export class HandleSubscriptionWebhook {
       name: session.customer_details?.name ?? undefined,
     });
 
-    // Create purchase row for library and has_access() compatibility
-    const alreadyOwns = await this.purchases.userOwnsProduct(user.id, productId);
-    if (!alreadyOwns) {
-      await this.purchases.create({
-        userId: user.id,
-        productId,
-        stripePaymentIntent: null,
-        stripeSessionId: session.id,
-        amount: session.amount_total ?? 0,
-        currency: session.currency ?? 'brl',
-        status: 'paid',
-      });
-    }
-
+    // No purchase row created — access is granted by the subscriptions table.
+    // Creating a permanent purchase would bypass cancellation enforcement.
     this.logger.info('sub_webhook.checkout.completed', { userId: user.id, productId });
   }
 
@@ -93,7 +80,7 @@ export class HandleSubscriptionWebhook {
       stripeSubscriptionId: sub.id,
       stripeCustomerId,
       stripePriceId: item?.price.id ?? '',
-      status: sub.status as any,
+      status: sub.status as SubscriptionStatus,
       // In Stripe SDK v22, current_period_start/end moved from Subscription to SubscriptionItem
       currentPeriodStart: item?.current_period_start
         ? new Date(item.current_period_start * 1000).toISOString()
