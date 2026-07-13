@@ -2,20 +2,40 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import type { ElementType } from "react";
+import {
+  LayoutDashboard,
+  Package,
+  ShoppingCart,
+  Users,
+  Mail,
+  BookOpen,
+  Ticket,
+  Link2,
+  Eye,
+  CreditCard,
+} from "lucide-react";
 
-export interface NavItem {
-  href: string;
-  label: string;
-  icon: ElementType;
-}
+const NAV = [
+  { href: "/admin", label: "Visão geral", icon: LayoutDashboard },
+  { href: "/admin/products", label: "Produtos", icon: Package },
+  { href: "/admin/purchases", label: "Compras", icon: ShoppingCart },
+  { href: "/admin/subscriptions", label: "Assinaturas", icon: CreditCard },
+  { href: "/admin/coupons", label: "Cupons", icon: Ticket },
+  { href: "/admin/invites", label: "Convites", icon: Link2 },
+  { href: "/admin/users", label: "Usuários", icon: Users },
+  { href: "/admin/access", label: "Acessos", icon: BookOpen },
+  { href: "/admin/leads", label: "Leads", icon: Mail },
+  { href: "/admin/pages", label: "Páginas", icon: Eye },
+];
 
-export function SidebarNav({ items }: { items: NavItem[] }) {
+export { NAV };
+
+export function SidebarNav() {
   const pathname = usePathname();
 
   return (
     <ul className="space-y-0.5">
-      {items.map((n) => {
+      {NAV.map((n) => {
         const active = pathname === n.href;
         return (
           <li key={n.href}>
@@ -34,5 +54,23 @@ export function SidebarNav({ items }: { items: NavItem[] }) {
         );
       })}
     </ul>
+  );
+}
+
+/** Horizontal scrollable version for mobile topbar */
+export function TopNav() {
+  return (
+    <nav className="flex gap-1 overflow-x-auto px-5 pb-3">
+      {NAV.map((n) => (
+        <Link
+          key={n.href}
+          href={n.href}
+          className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground transition hover:border-[var(--royal)]/40 hover:text-foreground"
+        >
+          <n.icon className="h-3.5 w-3.5" />
+          {n.label}
+        </Link>
+      ))}
+    </nav>
   );
 }
