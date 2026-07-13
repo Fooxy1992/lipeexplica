@@ -24,7 +24,7 @@ export class CreateSubscriptionCheckout {
     const product = await this.products.findById(input.productId);
     if (!product) throw new DomainError('NOT_FOUND', 'Produto não encontrado');
     if (!product.active) throw new DomainError('FORBIDDEN', 'Produto inativo');
-    if (!product.stripePriceId) {
+    if (!product.subscriptionStripePriceId) {
       throw new DomainError('VALIDATION', 'Produto sem plano de assinatura configurado');
     }
 
@@ -34,7 +34,7 @@ export class CreateSubscriptionCheckout {
     });
 
     const result = await this.gateway.createSubscriptionCheckout({
-      stripePriceId: product.stripePriceId,
+      stripePriceId: product.subscriptionStripePriceId,
       productId: product.id,
       productSlug: product.slug,
       customerEmail: input.customerEmail,
