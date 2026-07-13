@@ -41,6 +41,12 @@ export default async function BookPage({ params }: PageProps) {
         if (rpcError) logger.warn("book.access_log_failed", { error: rpcError.message });
       });
 
+    await c.trackAnalyticsEvent.execute({
+      userId: user.id,
+      event: 'book.opened',
+      properties: { productId: product.id, accessLevel },
+    });
+
     return (
       <Reader
         productId={product.id}

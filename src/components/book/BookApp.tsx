@@ -79,19 +79,19 @@ export function BookApp({ productId, initialProgress, accessLevel, previewPageIn
     }
   }, [page, opened, hydrated, total, setLastPage]);
 
+  const goToPage = (idx: number, dir?: 1 | -1) => {
+    if (isPreview && !previewSet.has(idx)) {
+      setShowConversionScreen(true);
+      return;
+    }
+    if (dir !== undefined) setDirection(dir);
+    setPage(idx);
+    setPanel(null);
+  };
+
   const go = (dir: 1 | -1) => {
-    setPage((p) => {
-      const next = Math.min(Math.max(p + dir, 0), total - 1);
-      if (next !== p) {
-        setDirection(dir);
-        // Block navigation to locked pages in preview mode
-        if (isPreview && !previewSet.has(next)) {
-          setTimeout(() => setShowConversionScreen(true), 0);
-          return p; // stay on current page
-        }
-      }
-      return next;
-    });
+    const next = Math.min(Math.max(page + dir, 0), total - 1);
+    if (next !== page) goToPage(next, dir);
   };
 
   // Keyboard
@@ -197,8 +197,7 @@ export function BookApp({ productId, initialProgress, accessLevel, previewPageIn
             <IconBtn
               onClick={() => {
                 const rand = Math.floor(Math.random() * total);
-                setDirection(rand > page ? 1 : -1);
-                setPage(rand);
+                goToPage(rand, rand > page ? 1 : -1);
               }}
               label="Dinâmica aleatória"
             >
@@ -377,9 +376,7 @@ export function BookApp({ productId, initialProgress, accessLevel, previewPageIn
                             d={d}
                             onClick={() => {
                               const idx = dinamicas.findIndex((x) => x.id === d.id);
-                              setDirection(idx > page ? 1 : -1);
-                              setPage(idx);
-                              setPanel(null);
+                              goToPage(idx, idx > page ? 1 : -1);
                             }}
                           />
                         ))}
@@ -394,9 +391,7 @@ export function BookApp({ productId, initialProgress, accessLevel, previewPageIn
                         active={d.id === current.id}
                         onClick={() => {
                           const idx = dinamicas.findIndex((x) => x.id === d.id);
-                          setDirection(idx > page ? 1 : -1);
-                          setPage(idx);
-                          setPanel(null);
+                          goToPage(idx, idx > page ? 1 : -1);
                         }}
                       />
                     ))}
