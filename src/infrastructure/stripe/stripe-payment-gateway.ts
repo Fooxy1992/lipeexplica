@@ -25,7 +25,6 @@ export class StripePaymentGateway implements PaymentGateway {
 
     const session = await this.stripe.checkout.sessions.create({
       mode: "payment",
-      payment_method_types: ["card"],
       line_items: [{ price: price.id, quantity: 1 }],
       allow_promotion_codes: true,
       customer_email: input.customerEmail,
@@ -142,7 +141,6 @@ export class StripePaymentGateway implements PaymentGateway {
 
     const session = await this.stripe.checkout.sessions.create({
       mode: "subscription",
-      payment_method_types: ["card"],
       line_items: [{ price: price.id, quantity: 1 }],
       customer_email: input.customerEmail,
       success_url: input.successUrl,
