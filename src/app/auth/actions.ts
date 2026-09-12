@@ -127,7 +127,7 @@ export async function updatePassword(
   const confirm = z.string().safeParse(formData.get("confirm"));
 
   if (!password.success) {
-    return { ok: false, message: password.error.errors[0].message };
+    return { ok: false, message: password.error.issues[0]?.message ?? "Senha inválida." };
   }
   if (!confirm.success || confirm.data !== password.data) {
     return { ok: false, message: "As senhas não coincidem." };
