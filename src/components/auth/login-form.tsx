@@ -1,11 +1,12 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { Loader2, Mail, KeyRound } from "lucide-react";
+import { Loader2, Mail, KeyRound, ArrowLeft } from "lucide-react";
 import {
   signInWithMagicLink,
   signInWithPassword,
   signInWithOAuth,
+  sendPasswordReset,
   type AuthFormState,
 } from "@/app/auth/actions";
 
@@ -23,9 +24,42 @@ const ghostBtn =
   "w-full text-center text-xs text-[#8B92A8] underline-offset-4 hover:text-[#1C1E2E] hover:underline transition";
 
 export function LoginForm() {
-  const [mode, setMode] = useState<"magic" | "password">("magic");
+  const [mode, setMode] = useState<"magic" | "password" | "reset">("magic");
   const [state, formAction, pending] = useActionState(signInWithMagicLink, initialState);
   const [pwState, pwAction, pwPending] = useActionState(signInWithPassword, initialState);
+  const [resetState, resetAction, resetPending] = useActionState(sendPasswordReset, initialState);
+
+  if (mode === "reset") {
+    return (
+      <div className="mt-6 space-y-4">
+        <form action={resetAction} className="space-y-3">
+          <label className={labelCls}>
+            Email da sua conta
+            <input
+              type="email"
+              name="email"
+              required
+              autoComplete="email"
+              placeholder="voce@exemplo.com"
+              className={inputCls}
+            />
+          </label>
+          <button type="submit" disabled={resetPending} className={primaryBtn}>
+            {resetPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Mail className="h-4 w-4" />}
+            Enviar link de redefinição
+          </button>
+          {resetState.message ? (
+            <p className={`text-xs ${resetState.ok ? "text-emerald-600" : "text-red-500"}`} role="status">
+              {resetState.message}
+            </p>
+          ) : null}
+        </form>
+        <button onClick={() => setMode("magic")} className={`${ghostBtn} flex items-center justify-center gap-1`}>
+          <ArrowLeft className="h-3 w-3" /> Voltar ao login
+        </button>
+      </div>
+    );
+  }
 
   if (mode === "password") {
     return (
@@ -61,6 +95,9 @@ export function LoginForm() {
             <p className="text-xs text-red-500" role="alert">{pwState.message}</p>
           ) : null}
         </form>
+        <button onClick={() => setMode("reset")} className={ghostBtn}>
+          Esqueci a senha
+        </button>
         <button onClick={() => setMode("magic")} className={ghostBtn}>
           Prefiro receber um link mágico por email
         </button>

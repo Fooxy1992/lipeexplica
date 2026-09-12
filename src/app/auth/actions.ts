@@ -95,3 +95,52 @@ export async function signOut() {
   await supabase.auth.signOut();
   redirect("/");
 }
+
+/** Sends a password reset email. Never reveals whether the email exists. */
+export async function sendPasswordReset(
+  _prev: AuthFormState,
+  formData: FormData,
+): Promise<AuthFormState> {
+  const parsed = emailSchema.safeParse(formData.get("email"));
+  if (!parsed.success) {
+    return { ok: false, message: "Digite um email válido." };
+  }
+
+  const supabase = await createSupabaseServerClient();
+  await supabase.auth.resetPasswordForEmail(parsed.data, {
+    redirectTo: `${publicEnv.NEXT_PUBLIC_SITE_URL}/auth/callback?next=/auth/reset-password`,
+  });
+
+  logger.info("auth.password_reset_requested");
+  return {
+    ok: true,
+    message: "Se este email possui uma conta, receberá um link para redefinir a senha.",
+  };
+}
+
+/** Updates the password for the currently authenticated user. */
+export async function updatePassword(
+  _prev: AuthFormState,
+  formData: FormData,
+): Promise<AuthFormState> {
+  const password = z.string().min(8, "Mínimo 8 caracteres").safeParse(formData.get("password"));
+  const confirm = z.string().safeParse(formData.get("confirm"));
+
+  if (!password.success) {
+    return { ok: false, message: password.error.errors[0].message };
+  }
+  if (!confirm.success || confirm.data !== password.data) {
+    return { ok: false, message: "As senhas não coincidem." };
+  }
+
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.auth.updateUser({ password: password.data });
+
+  if (error) {
+    logger.warn("auth.update_password_failed", { error: error.message });
+    return { ok: false, message: "Não foi possível atualizar a senha. Tente novamente." };
+  }
+
+  logger.info("auth.password_updated");
+  redirect("/library");
+}
