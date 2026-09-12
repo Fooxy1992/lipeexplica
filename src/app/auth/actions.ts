@@ -7,14 +7,21 @@ import { createSupabaseServerClient } from "@/infrastructure/supabase/server";
 import { logger } from "@/infrastructure/di/container";
 import { publicEnv } from "@/lib/env";
 
-/** Derives the site origin from the request headers — works in any environment. */
+/** Derives the production site URL — never returns localhost in production. */
 async function siteOrigin(): Promise<string> {
+  // Read directly at runtime (avoids module-level cache issues with NEXT_PUBLIC_*)
+  const fromEnv = process.env.NEXT_PUBLIC_SITE_URL;
+  if (fromEnv && !fromEnv.includes("localhost")) return fromEnv;
+
+  // Fallback: derive from Vercel-injected request headers
   const h = await headers();
-  const origin = h.get("origin");
-  if (origin) return origin;
-  const host = h.get("host") ?? h.get("x-forwarded-host");
+  const xHost = h.get("x-forwarded-host");
   const proto = h.get("x-forwarded-proto") ?? "https";
-  if (host) return `${proto}://${host}`;
+  if (xHost && !xHost.includes("localhost")) return `${proto}://${xHost}`;
+
+  const origin = h.get("origin");
+  if (origin && !origin.includes("localhost")) return origin;
+
   return publicEnv.NEXT_PUBLIC_SITE_URL;
 }
 
