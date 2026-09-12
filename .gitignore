@@ -42,3 +42,6 @@ next-env.d.ts
 
 .vercel
 scripts/stripe-setup.out.json
+
+# supabase cli cache
+supabase/.temp/
