@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { GraduationCap, Library, Menu } from "lucide-react";
+import { GraduationCap, Library } from "lucide-react";
 import { userScopedContainer } from "@/infrastructure/di/container";
-import { SidebarNav, TopNav } from "@/components/admin/sidebar-nav";
+import { SidebarNav, MobileTopNav } from "@/components/admin/sidebar-nav";
 
 export const dynamic = "force-dynamic";
 
@@ -21,36 +21,53 @@ export default async function AdminLayout({
   if (!profile?.isAdmin) redirect("/library");
 
   return (
-    <div className="site-dark min-h-dvh bg-background">
+    <>
+      <style>{`
+        @view-transition { navigation: auto; }
+        @keyframes admin-slide-in {
+          from { opacity: 0; transform: translateY(8px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        ::view-transition-old(root) {
+          animation: 150ms ease-in both fade-out;
+        }
+        ::view-transition-new(root) {
+          animation: 200ms ease-out both admin-slide-in;
+        }
+        @keyframes fade-out {
+          from { opacity: 1; }
+          to   { opacity: 0; }
+        }
+      `}</style>
+    <div className="flex h-dvh overflow-hidden bg-[#EEF2FA]">
       {/* ── Fixed left sidebar (desktop) ── */}
-      <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col border-r border-border bg-card lg:flex">
+      <aside className="hidden w-[220px] shrink-0 flex-col border-r border-[#E4EAF4] bg-white lg:flex">
         {/* Brand */}
-        <div className="flex items-center gap-3 border-b border-border px-6 py-5">
-          <div
-            className="grid h-9 w-9 shrink-0 place-items-center rounded-xl shadow-md"
-            style={{ background: "linear-gradient(135deg, #FF4D2D, #ff7a5c)" }}
-          >
-            <GraduationCap className="h-5 w-5 text-white" />
-          </div>
-          <div>
-            <p className="font-display text-sm font-bold leading-tight">LipeExplica</p>
-            <p className="text-[10px] text-muted-foreground">Painel Admin</p>
+        <div className="px-5 pb-4 pt-6">
+          <div className="flex items-center gap-3">
+            <div
+              className="grid h-9 w-9 shrink-0 place-items-center rounded-xl shadow-sm"
+              style={{ background: "linear-gradient(135deg, #FF4D2D, #ff7a5c)" }}
+            >
+              <GraduationCap className="h-5 w-5 text-white" />
+            </div>
+            <div>
+              <p className="text-sm font-bold text-[#1C1E2E]">LipeExplica</p>
+              <p className="text-[10px] text-[#8B92A8]">Painel Admin</p>
+            </div>
           </div>
         </div>
 
         {/* Nav */}
-        <nav className="flex-1 overflow-y-auto p-4">
-          <p className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
-            Navegação
-          </p>
+        <nav className="flex-1 overflow-y-auto px-3 py-2">
           <SidebarNav />
         </nav>
 
         {/* Footer */}
-        <div className="border-t border-border p-4">
+        <div className="border-t border-[#E4EAF4] px-3 pb-5 pt-3">
           <Link
             href="/library"
-            className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+            className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-[#8B92A8] transition-colors hover:bg-[#F5F7FF] hover:text-[#1C1E2E]"
           >
             <Library className="h-4 w-4 shrink-0" />
             Ir para Biblioteca
@@ -58,30 +75,24 @@ export default async function AdminLayout({
         </div>
       </aside>
 
-      {/* ── Content (offset on desktop) ── */}
-      <div className="flex flex-col lg:pl-64">
+      {/* ── Content ── */}
+      <div className="flex flex-1 flex-col overflow-hidden">
         {/* Mobile topbar */}
-        <header className="sticky top-0 z-30 border-b border-border bg-card/80 backdrop-blur-md lg:hidden">
+        <header className="border-b border-[#E4EAF4] bg-white lg:hidden">
           <div className="flex items-center justify-between px-5 py-4">
-            <Link href="/" className="font-display text-base font-bold">
-              lipe<span style={{ color: "var(--royal)" }}>explica</span>
-              <span
-                className="ml-2 rounded-md px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-widest"
-                style={{
-                  background: "color-mix(in oklab, var(--royal) 12%, transparent)",
-                  color: "var(--royal)",
-                }}
-              >
+            <Link href="/" className="font-bold text-[#1C1E2E]">
+              Lipe<span style={{ color: "#FF4D2D" }}>Explica</span>
+              <span className="ml-2 rounded-md bg-red-50 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-widest text-[#FF4D2D]">
                 admin
               </span>
             </Link>
-            <Menu className="h-5 w-5 text-muted-foreground" />
           </div>
-          <TopNav />
+          <MobileTopNav />
         </header>
 
-        <main className="flex-1 p-6 lg:p-8">{children}</main>
+        <main className="flex-1 overflow-auto p-6 lg:p-8">{children}</main>
       </div>
     </div>
+    </>
   );
 }

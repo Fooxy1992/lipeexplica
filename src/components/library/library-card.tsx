@@ -3,62 +3,72 @@ import { BookOpen, Clock, Sparkles } from "lucide-react";
 import type { LibraryItem } from "@/core/application/use-cases/get-user-library";
 import { formatDate } from "@/lib/utils";
 
-/** One owned product in the library, with progress + continue CTA. */
 export function LibraryCard({ item }: { item: LibraryItem }) {
   const { product, progressPct, lastAccessedAt } = item;
   const started = progressPct > 0;
 
   return (
-    <div className="group overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition hover:border-[var(--royal)]/50 hover:shadow-md">
-      {/* mini cover strip */}
-      <div className="relative flex h-36 items-center justify-center bg-gradient-to-br from-[oklch(0.22_0.05_265)] to-[oklch(0.14_0.03_260)]">
+    <div className="group overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-[#E4EAF4] transition-all hover:-translate-y-0.5 hover:shadow-md">
+      {/* Cover strip */}
+      <div
+        className="relative flex h-36 items-center justify-center"
+        style={{
+          background: "linear-gradient(135deg, #1C1E2E 0%, #2a1a16 60%, #3d1a0f 100%)",
+        }}
+      >
         <AccessTypeBadge type={item.accessType} />
-        <div className="rounded-lg border border-[color-mix(in_oklab,var(--gold)_50%,transparent)] px-5 py-3 text-center">
-          <p className="text-[9px] uppercase tracking-[0.3em] text-white/60">
+        <div
+          className="rounded-xl px-5 py-3 text-center"
+          style={{ border: "1px solid rgba(255,77,45,0.35)" }}
+        >
+          <p className="text-[9px] uppercase tracking-[0.3em] text-white/50">
             {product.type === "ebook" ? "Livro interativo" : product.type}
           </p>
-          <p className="gold-text mt-1 font-display text-lg font-semibold leading-tight">
+          <p
+            className="mt-1 font-display text-lg font-semibold leading-tight"
+            style={{ color: "#ff9e7a" }}
+          >
             {product.title}
           </p>
         </div>
       </div>
 
       <div className="p-5">
-        <p className="line-clamp-2 text-sm leading-relaxed text-muted-foreground">
+        <p className="line-clamp-2 text-sm leading-relaxed text-[#8B92A8]">
           {product.description}
         </p>
 
-        {/* progress */}
+        {/* Progress */}
         <div className="mt-4">
-          <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+          <div className="flex items-center justify-between text-[11px] text-[#8B92A8]">
             <span>Progresso</span>
-            <span>{progressPct}%</span>
+            <span className="font-semibold text-[#1C1E2E]">{progressPct}%</span>
           </div>
-          <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-muted">
+          <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-[#EEF2FA]">
             <div
               className="h-full rounded-full transition-all duration-500"
               style={{
                 width: `${progressPct}%`,
-                background: "linear-gradient(90deg, var(--royal), var(--gold))",
+                background: "linear-gradient(90deg, #FF4D2D, #ff7a5c)",
               }}
             />
           </div>
         </div>
 
-        <div className="mt-4 flex items-center justify-between">
+        <div className="mt-3">
           {lastAccessedAt ? (
-            <p className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+            <p className="flex items-center gap-1.5 text-[11px] text-[#8B92A8]">
               <Clock className="h-3 w-3" />
               Último acesso: {formatDate(lastAccessedAt)}
             </p>
           ) : (
-            <p className="text-[11px] text-muted-foreground">Nunca aberto</p>
+            <p className="text-[11px] text-[#B0B8CC]">Nunca aberto</p>
           )}
         </div>
 
         <Link
           href={`/books/${product.slug}`}
-          className="mt-4 flex w-full items-center justify-center gap-2 rounded-full bg-[var(--royal)] px-5 py-3 text-sm font-semibold text-[var(--royal-foreground)] transition hover:opacity-90"
+          className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-[#FF4D2D] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#e03e20]"
         >
           <BookOpen className="h-4 w-4" />
           {item.accessType === "preview"
@@ -67,10 +77,11 @@ export function LibraryCard({ item }: { item: LibraryItem }) {
             ? "Continuar Leitura"
             : "Abrir"}
         </Link>
+
         {item.accessType === "preview" && (
           <Link
             href="/50dinamicas#comprar"
-            className="mt-2 flex w-full items-center justify-center gap-1.5 rounded-full border border-[#FF4D2D]/30 py-2 text-[11px] font-medium text-[#FF4D2D] transition hover:bg-[#FF4D2D]/10"
+            className="mt-2 flex w-full items-center justify-center gap-1.5 rounded-xl border border-[#FF4D2D]/25 py-2 text-[11px] font-medium text-[#FF4D2D] transition hover:bg-[#FF4D2D]/8"
           >
             <Sparkles className="h-3 w-3" /> Desbloquear acesso completo
           </Link>
@@ -82,31 +93,15 @@ export function LibraryCard({ item }: { item: LibraryItem }) {
 
 function AccessTypeBadge({ type }: { type: "premium" | "preview" | "admin" }) {
   const configs = {
-    premium: {
-      label: "Premium",
-      style: { background: "linear-gradient(135deg, #FF4D2D, #ff7a5c)" },
-    },
-    preview: {
-      label: "Preview",
-      style: {
-        background: "rgba(255,77,45,0.15)",
-        color: "#FF4D2D",
-        border: "1px solid rgba(255,77,45,0.3)",
-      },
-    },
-    admin: {
-      label: "Admin",
-      style: {
-        background: "var(--gold)",
-        color: "var(--gold-foreground)",
-      },
-    },
+    premium: { label: "Premium", bg: "#FF4D2D", color: "#fff" },
+    preview: { label: "Preview", bg: "rgba(255,77,45,0.15)", color: "#FF4D2D" },
+    admin:   { label: "Admin",   bg: "#f59e0b", color: "#fff" },
   };
   const c = configs[type];
   return (
     <span
-      className="absolute right-3 top-3 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-white"
-      style={c.style}
+      className="absolute right-3 top-3 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider"
+      style={{ background: c.bg, color: c.color }}
     >
       {c.label}
     </span>

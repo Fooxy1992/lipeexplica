@@ -43,6 +43,13 @@ export async function redeemInvite(
   _prev: RedeemState,
   formData: FormData,
 ): Promise<RedeemState> {
+  const whatsappOptIn = formData.get("whatsapp_opt_in") === "on";
+  const rawPhone = (formData.get("phone_number") as string | null)?.trim() ?? "";
+  const phoneCode = (formData.get("phone_code") as string | null) ?? "+55";
+  const phone = whatsappOptIn && rawPhone
+    ? `${phoneCode}${rawPhone.replace(/\D/g, "")}`
+    : null;
+
   const parsed = schema.safeParse({
     token: formData.get("token"),
     name: formData.get("name"),
@@ -130,6 +137,12 @@ export async function redeemInvite(
         .update({ used_count: invite.used_count + 1 })
         .eq("id", invite.id);
     }
+  }
+
+  if (phone) {
+    await admin.auth.admin.updateUserById(userId, {
+      user_metadata: { whatsapp_opt_in: true, whatsapp_phone: phone },
+    });
   }
 
   logger.info("invite.redeemed", { inviteId: invite.id, userId });

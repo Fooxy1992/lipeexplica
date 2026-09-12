@@ -1,15 +1,57 @@
 'use client';
 
+import { useState } from 'react';
 import { motion } from 'motion/react';
-import { Lock, Sparkles, Star, Zap } from 'lucide-react';
-import Link from 'next/link';
+import { Sparkles, Zap, MessageCircle, BookOpen, Loader2 } from 'lucide-react';
 
 interface Props {
   productSlug: string;
+  productId: string;
   onDismiss?: () => void;
 }
 
-export function PremiumConversionScreen({ productSlug, onDismiss }: Props) {
+type LoadingKey = 'sub' | 'book' | 'bundle' | null;
+
+export function PremiumConversionScreen({ productSlug, productId, onDismiss }: Props) {
+  const [loading, setLoading] = useState<LoadingKey>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleSubscribe() {
+    setLoading('sub');
+    setError(null);
+    try {
+      const res = await fetch('/api/checkout/subscription', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ productId }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? 'Erro ao iniciar assinatura');
+      window.location.href = data.url;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro inesperado');
+      setLoading(null);
+    }
+  }
+
+  async function handleBuy(plan: 'book' | 'bundle') {
+    setLoading(plan);
+    setError(null);
+    try {
+      const res = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ productId, plan }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? 'Erro ao iniciar checkout');
+      window.location.href = data.url;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro inesperado');
+      setLoading(null);
+    }
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -18,7 +60,6 @@ export function PremiumConversionScreen({ productSlug, onDismiss }: Props) {
       className="fixed inset-0 z-50 flex items-center justify-center p-4"
       style={{ backdropFilter: 'blur(24px)', background: 'rgba(19,19,19,0.92)' }}
     >
-      {/* Ambient glow */}
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0"
@@ -33,63 +74,94 @@ export function PremiumConversionScreen({ productSlug, onDismiss }: Props) {
         animate={{ scale: 1, y: 0, opacity: 1 }}
         exit={{ scale: 0.95, opacity: 0 }}
         transition={{ type: 'spring', damping: 24, stiffness: 280, delay: 0.05 }}
-        className="relative w-full max-w-md overflow-hidden rounded-3xl border border-[#FF4D2D]/25 bg-[#1a1a1a] p-8 text-center shadow-[0_0_80px_rgba(255,77,45,0.15)]"
+        className="relative w-full max-w-md overflow-hidden rounded-3xl border border-[#FF4D2D]/25 bg-[#1a1a1a] p-6 shadow-[0_0_80px_rgba(255,77,45,0.15)]"
       >
-        {/* Lock icon */}
         <motion.div
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
           transition={{ type: 'spring', damping: 15, stiffness: 300, delay: 0.15 }}
-          className="mx-auto mb-5 grid h-16 w-16 place-items-center rounded-2xl"
-          style={{
-            background: 'linear-gradient(135deg, rgba(255,77,45,0.2), rgba(255,77,45,0.08))',
-            border: '1px solid rgba(255,77,45,0.3)',
-          }}
-        >
-          <Lock className="h-7 w-7 text-[#FF4D2D]" />
-        </motion.div>
-
-        <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-[#FF4D2D]">
-          Conteúdo Premium
-        </p>
-        <h2 className="mt-3 font-display text-2xl font-black leading-tight text-white">
-          Esta dinâmica não está no<br />
-          <span className="text-[#FF4D2D]">modo preview</span>
-        </h2>
-        <p className="mt-3 text-sm leading-relaxed text-white/60">
-          Você está explorando as primeiras dinâmicas. Para acessar as 50 completas,
-          assine ou compre o livro.
-        </p>
-
-        {/* Benefits */}
-        <div className="mt-5 space-y-2 text-left">
-          {[
-            { icon: Star, text: '50 dinâmicas completas com passo a passo' },
-            { icon: Zap, text: 'Cronômetro, favoritos e progresso sincronizado' },
-            { icon: Sparkles, text: 'Acesso vitalício — uma vez, para sempre' },
-          ].map(({ icon: Icon, text }) => (
-            <div key={text} className="flex items-center gap-3">
-              <div className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-[#FF4D2D]/10">
-                <Icon className="h-3.5 w-3.5 text-[#FF4D2D]" />
-              </div>
-              <span className="text-sm text-white/75">{text}</span>
-            </div>
-          ))}
-        </div>
-
-        <Link
-          href={`/${productSlug}#comprar`}
-          className="mt-7 flex w-full items-center justify-center gap-2 rounded-2xl py-4 text-base font-bold text-white transition hover:brightness-110 active:scale-[0.98]"
+          className="mx-auto mb-4 grid h-14 w-14 place-items-center rounded-2xl"
           style={{ background: 'linear-gradient(135deg, #FF4D2D, #ff7a5c)' }}
         >
-          <Sparkles className="h-4 w-4" />
-          Quero acesso completo
-        </Link>
+          <Sparkles className="h-6 w-6 text-white" />
+        </motion.div>
+
+        <p className="text-center text-[11px] font-semibold uppercase tracking-[0.3em] text-[#FF4D2D]">
+          Preview concluído 🥋
+        </p>
+        <h2 className="mt-2 text-center font-display text-xl font-black leading-tight text-white">
+          Gostou? Escolha como continuar
+        </h2>
+
+        {error && <p className="mt-3 text-center text-xs text-red-400">{error}</p>}
+
+        <div className="mt-5 space-y-3">
+          {/* Assinatura */}
+          <div className="rounded-2xl border border-[#FF4D2D]/30 bg-[#FF4D2D]/8 p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Zap className="h-4 w-4 text-[#FF4D2D]" />
+                <span className="text-sm font-semibold text-white">Assinatura mensal</span>
+              </div>
+              <span className="font-display text-lg font-black text-white">R$14,90<span className="text-xs font-normal text-white/50">/mês</span></span>
+            </div>
+            <p className="mt-1 text-xs text-white/50">50 dinâmicas · cancele quando quiser</p>
+            <button
+              onClick={handleSubscribe}
+              disabled={loading !== null}
+              className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-bold text-white transition hover:brightness-110 disabled:opacity-60"
+              style={{ background: 'linear-gradient(135deg, #FF4D2D, #ff7a5c)' }}
+            >
+              {loading === 'sub' ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Assinar por R$14,90/mês'}
+            </button>
+          </div>
+
+          {/* Livro completo */}
+          <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <BookOpen className="h-4 w-4 text-white/70" />
+                <span className="text-sm font-semibold text-white">Livro completo</span>
+              </div>
+              <span className="font-display text-lg font-black text-white">R$14,90</span>
+            </div>
+            <p className="mt-1 text-xs text-white/50">Acesso vitalício às 50 dinâmicas</p>
+            <button
+              onClick={() => handleBuy('book')}
+              disabled={loading !== null}
+              className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl border border-white/15 py-2.5 text-sm font-semibold text-white transition hover:bg-white/10 disabled:opacity-60"
+            >
+              {loading === 'book' ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Comprar por R$14,90'}
+            </button>
+          </div>
+
+          {/* Bundle */}
+          <div className="relative rounded-2xl border border-[#ffbc7c]/40 bg-[#ffbc7c]/5 p-4">
+            <span className="absolute -top-2.5 left-4 rounded-full bg-[#ffbc7c] px-2.5 py-0.5 text-[10px] font-bold text-black">
+              MELHOR VALOR
+            </span>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <MessageCircle className="h-4 w-4 text-[#ffbc7c]" />
+                <span className="text-sm font-semibold text-white">Livro + WhatsApp</span>
+              </div>
+              <span className="font-display text-lg font-black text-white">R$19,90</span>
+            </div>
+            <p className="mt-1 text-xs text-white/50">Livro vitalício + dinâmicas novas toda semana</p>
+            <button
+              onClick={() => handleBuy('bundle')}
+              disabled={loading !== null}
+              className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl border border-[#ffbc7c]/30 py-2.5 text-sm font-semibold text-[#ffbc7c] transition hover:bg-[#ffbc7c]/10 disabled:opacity-60"
+            >
+              {loading === 'bundle' ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Comprar por R$19,90'}
+            </button>
+          </div>
+        </div>
 
         {onDismiss && (
           <button
             onClick={onDismiss}
-            className="mt-3 w-full py-2 text-sm text-white/40 transition hover:text-white/70"
+            className="mt-4 w-full py-2 text-center text-sm text-white/30 transition hover:text-white/50"
           >
             Voltar ao preview
           </button>

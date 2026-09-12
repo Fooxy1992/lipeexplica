@@ -1,26 +1,277 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@custom-variant dark (&:is(.dark *));
 
+/* ---------------------------------------------------------------------------
+ * Design tokens — premium palette (deep navy + royal blue + gold).
+ * Inspired by Apple/Linear/Stripe: quiet surfaces, strong type, one accent.
+ * ------------------------------------------------------------------------- */
 @theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-gold: var(--gold);
+  --color-gold-foreground: var(--gold-foreground);
+  --color-royal: var(--royal);
+  --color-royal-foreground: var(--royal-foreground);
+  --color-ink: var(--ink);
+  --color-paper: var(--paper);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --font-display: var(--font-fraunces), ui-serif, Georgia, serif;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, sans-serif;
+
+  --shadow-book: 0 30px 60px -20px rgb(0 0 0 / 0.35), 0 12px 24px -14px rgb(0 0 0 / 0.25);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+:root {
+  --radius: 0.75rem;
+
+  --ink: oklch(0.20 0.04 260);
+  --paper: oklch(0.985 0.005 100);
+
+  --background: oklch(0.985 0.006 260);
+  --foreground: oklch(0.20 0.04 260);
+
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.20 0.04 260);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.20 0.04 260);
+
+  --primary: oklch(0.20 0.04 260);
+  --primary-foreground: oklch(0.99 0.003 100);
+
+  --royal: oklch(0.52 0.22 265);
+  --royal-foreground: oklch(0.99 0.003 100);
+
+  --gold: oklch(0.82 0.14 85);
+  --gold-foreground: oklch(0.22 0.05 260);
+
+  --secondary: oklch(0.955 0.01 260);
+  --secondary-foreground: oklch(0.22 0.04 260);
+  --muted: oklch(0.955 0.01 260);
+  --muted-foreground: oklch(0.50 0.02 260);
+  --accent: oklch(0.94 0.02 260);
+  --accent-foreground: oklch(0.22 0.04 260);
+  --destructive: oklch(0.60 0.22 25);
+  --destructive-foreground: oklch(0.99 0.003 100);
+  --border: oklch(0.90 0.01 260);
+  --input: oklch(0.90 0.01 260);
+  --ring: oklch(0.52 0.22 265);
+}
+
+.dark {
+  --background: oklch(0.16 0.03 260);
+  --foreground: oklch(0.97 0.005 260);
+  --card: oklch(0.22 0.04 260);
+  --card-foreground: oklch(0.97 0.005 260);
+  --popover: oklch(0.22 0.04 260);
+  --popover-foreground: oklch(0.97 0.005 260);
+  --primary: oklch(0.97 0.005 260);
+  --primary-foreground: oklch(0.20 0.04 260);
+  --royal: oklch(0.62 0.20 265);
+  --royal-foreground: oklch(0.99 0.003 100);
+  --gold: oklch(0.82 0.15 85);
+  --gold-foreground: oklch(0.20 0.04 260);
+  --secondary: oklch(0.28 0.04 260);
+  --secondary-foreground: oklch(0.97 0.005 260);
+  --muted: oklch(0.26 0.03 260);
+  --muted-foreground: oklch(0.72 0.02 260);
+  --accent: oklch(0.30 0.05 260);
+  --accent-foreground: oklch(0.97 0.005 260);
+  --destructive: oklch(0.62 0.22 25);
+  --destructive-foreground: oklch(0.99 0.003 100);
+  --border: oklch(0.35 0.03 260 / 60%);
+  --input: oklch(0.35 0.03 260 / 60%);
+  --ring: oklch(0.62 0.20 265);
+  --paper: oklch(0.24 0.03 260);
+  --ink: oklch(0.97 0.005 260);
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+  html,
+  body {
+    height: 100%;
+  }
+  body {
+    background: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+  h1,
+  h2,
+  h3,
+  .font-display {
+    font-family: var(--font-display);
+    letter-spacing: -0.01em;
   }
 }
 
-body {
+/* ---------------------------------------------------------------------------
+ * Tema do site original lipeexplica (dark + brand-red #FF4D2D).
+ * `.site-dark` remapeia os tokens shadcn para o visual clássico do canal,
+ * então as páginas de conteúdo continuam usando as mesmas classes.
+ * ------------------------------------------------------------------------- */
+.site-dark {
+  --brand-red: #ef4444;
+
+  --background: #09090b;
+  --foreground: #ffffff;
+  --card: #111827;
+  --card-foreground: #ffffff;
+  --popover: #111827;
+  --popover-foreground: #ffffff;
+  --primary: #ffffff;
+  --primary-foreground: #09090b;
+  --royal: #ef4444;
+  --royal-foreground: #ffffff;
+  --gold: #facc15;
+  --gold-foreground: #09090b;
+  --secondary: #1f2937;
+  --secondary-foreground: #ffffff;
+  --muted: #1f2937;
+  --muted-foreground: #94a3b8;
+  --accent: #1f2937;
+  --accent-foreground: #ffffff;
+  --border: rgb(255 255 255 / 0.05);
+  --input: rgb(255 255 255 / 0.08);
+  --ring: #ef4444;
+
+  /* livro interativo no tema do site */
+  --paper: #111827;
+  --ink: #f1f5f9;
+
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+}
+
+.site-dark ::selection {
+  background: var(--brand-red);
+  color: #fff;
+}
+
+/* Botões clássicos do site */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: #ff4d2d;
+  color: #fff;
+  padding: 0.9rem 1.9rem;
+  border-radius: 9999px;
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 600;
+  transition: background 0.2s, transform 0.15s;
+  box-shadow: 0 0 30px -5px rgb(255 77 45 / 0.4);
+}
+.btn-primary:hover {
+  background: rgb(255 77 45 / 0.9);
+  transform: scale(0.97);
+}
+
+.btn-outline-site {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: transparent;
+  color: #e5e2e1;
+  padding: 0.9rem 1.9rem;
+  border-radius: 9999px;
+  border: 2px solid rgb(255 255 255 / 0.12);
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 600;
+  transition: border-color 0.2s, transform 0.15s, background 0.2s;
+}
+.btn-outline-site:hover {
+  border-color: rgb(255 255 255 / 0.3);
+  background: rgb(255 255 255 / 0.04);
+  transform: scale(0.97);
+}
+
+.glass {
+  background: rgb(19 19 19 / 0.8);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgb(255 255 255 / 0.08);
+}
+
+.card-hover {
+  transition: transform 0.25s ease, background-color 0.25s ease, border-color 0.25s ease;
+}
+.card-hover:hover {
+  transform: translateY(-3px);
+}
+
+.grid-bg {
+  background-image:
+    linear-gradient(to right, rgb(255 255 255 / 0.02) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(255 255 255 / 0.02) 1px, transparent 1px);
+  background-size: 64px 64px;
+}
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes float-y {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+.animate-fade-up { animation: fade-up 0.7s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.animate-float-y { animation: float-y 4s ease-in-out infinite; }
+
+/* Thin scrollbar for book reader (webkit) */
+.book-scroll::-webkit-scrollbar { width: 4px; }
+.book-scroll::-webkit-scrollbar-track { background: transparent; }
+.book-scroll::-webkit-scrollbar-thumb { background: color-mix(in oklab, var(--foreground) 20%, transparent); border-radius: 9999px; }
+
+/* Paper-like page surface for the interactive book */
+@utility page-paper {
+  background:
+    radial-gradient(1200px 400px at 50% -10%, color-mix(in oklab, var(--gold) 8%, transparent), transparent 60%),
+    linear-gradient(180deg, var(--paper), color-mix(in oklab, var(--paper) 96%, var(--ink) 4%));
+}
+
+/* Gold gradient headline text */
+@utility gold-text {
+  background: linear-gradient(
+    135deg,
+    color-mix(in oklab, var(--gold) 90%, white 10%),
+    color-mix(in oklab, var(--gold) 60%, var(--royal) 40%)
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }

@@ -22,6 +22,10 @@ export interface Product {
   stripePriceId: string | null;
   /** Recurring Stripe price for subscription access. Separate from one-time stripePriceId. */
   subscriptionStripePriceId: string | null;
+  /** One-time price for book + WhatsApp group bundle. */
+  bundleStripePriceId: string | null;
+  /** Display price for bundle in cents. */
+  bundlePrice: number | null;
   active: boolean;
   createdAt: string;
 }

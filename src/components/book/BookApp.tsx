@@ -419,6 +419,7 @@ export function BookApp({ productId, initialProgress, accessLevel, previewPageIn
         {showConversionScreen && (
           <PremiumConversionScreen
             productSlug="50dinamicas"
+            productId={productId}
             onDismiss={() => setShowConversionScreen(false)}
           />
         )}
