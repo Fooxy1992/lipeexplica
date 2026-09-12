@@ -7,12 +7,19 @@ import { LoginForm } from "@/components/auth/login-form";
 export const metadata: Metadata = { title: "Entrar" };
 export const dynamic = "force-dynamic";
 
-export default async function LoginPage() {
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ compra?: string }>;
+}) {
   const supabase = await createSupabaseServerClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
   if (user) redirect("/library");
+
+  const { compra } = await searchParams;
+  const compraOk = compra === "ok";
 
   return (
     <div className="flex min-h-dvh bg-[#EEF2FA]">
@@ -53,12 +60,19 @@ export default async function LoginPage() {
         </Link>
 
         <div className="w-full max-w-md">
+          {compraOk && (
+            <div className="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+              <strong>Pagamento aprovado! 🥋</strong> Use o email da sua compra para acessar sua biblioteca.
+            </div>
+          )}
           <div className="rounded-2xl bg-white p-8 shadow-sm ring-1 ring-[#E4EAF4]">
             <h1 className="font-display text-2xl font-bold text-[#1C1E2E]">
-              Acesse sua conta
+              {compraOk ? "Acesse sua biblioteca" : "Acesse sua conta"}
             </h1>
             <p className="mt-2 text-sm text-[#8B92A8]">
-              Use o email da sua compra — enviamos um link mágico ou entre com senha.
+              {compraOk
+                ? "Digite o email usado na compra — vamos enviar um link de acesso."
+                : "Use o email da sua compra — enviamos um link mágico ou entre com senha."}
             </p>
             <LoginForm />
           </div>
