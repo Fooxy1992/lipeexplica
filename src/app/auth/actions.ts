@@ -9,11 +9,11 @@ import { publicEnv } from "@/lib/env";
 
 /** Derives the production site URL — never returns localhost in production. */
 async function siteOrigin(): Promise<string> {
-  // Read directly at runtime (avoids module-level cache issues with NEXT_PUBLIC_*)
-  const fromEnv = process.env.NEXT_PUBLIC_SITE_URL;
-  if (fromEnv && !fromEnv.includes("localhost")) return fromEnv;
+  // AUTH_REDIRECT_BASE_URL is server-only (no NEXT_PUBLIC_ prefix) — never inlined by Turbopack
+  const serverVar = process.env.AUTH_REDIRECT_BASE_URL;
+  if (serverVar && !serverVar.includes("localhost")) return serverVar;
 
-  // Fallback: derive from Vercel-injected request headers
+  // Fallback: Vercel-injected request headers (always correct in prod)
   const h = await headers();
   const xHost = h.get("x-forwarded-host");
   const proto = h.get("x-forwarded-proto") ?? "https";
@@ -21,6 +21,10 @@ async function siteOrigin(): Promise<string> {
 
   const origin = h.get("origin");
   if (origin && !origin.includes("localhost")) return origin;
+
+  // Last resort: NEXT_PUBLIC_SITE_URL (may be inlined at build time)
+  const fromEnv = process.env.NEXT_PUBLIC_SITE_URL;
+  if (fromEnv && !fromEnv.includes("localhost")) return fromEnv;
 
   return publicEnv.NEXT_PUBLIC_SITE_URL;
 }
