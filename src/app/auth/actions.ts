@@ -1,10 +1,22 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { headers } from "next/headers";
 import { z } from "zod";
 import { createSupabaseServerClient } from "@/infrastructure/supabase/server";
 import { logger } from "@/infrastructure/di/container";
 import { publicEnv } from "@/lib/env";
+
+/** Derives the site origin from the request headers — works in any environment. */
+async function siteOrigin(): Promise<string> {
+  const h = await headers();
+  const origin = h.get("origin");
+  if (origin) return origin;
+  const host = h.get("host") ?? h.get("x-forwarded-host");
+  const proto = h.get("x-forwarded-proto") ?? "https";
+  if (host) return `${proto}://${host}`;
+  return publicEnv.NEXT_PUBLIC_SITE_URL;
+}
 
 const emailSchema = z.string().trim().toLowerCase().email();
 
@@ -24,10 +36,11 @@ export async function signInWithMagicLink(
   }
 
   const supabase = await createSupabaseServerClient();
+  const origin = await siteOrigin();
   const { error } = await supabase.auth.signInWithOtp({
     email: parsed.data,
     options: {
-      emailRedirectTo: `${publicEnv.NEXT_PUBLIC_SITE_URL}/auth/callback`,
+      emailRedirectTo: `${origin}/auth/callback`,
       // do NOT auto-create accounts here — accounts are created on purchase
       // (webhook) or via OAuth. Avoids junk signups from the login form.
       shouldCreateUser: false,
@@ -76,10 +89,11 @@ export async function signInWithPassword(
 /** OAuth sign-in (Google live; Apple prepared — enable in Supabase). */
 export async function signInWithOAuth(provider: "google" | "apple") {
   const supabase = await createSupabaseServerClient();
+  const origin = await siteOrigin();
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider,
     options: {
-      redirectTo: `${publicEnv.NEXT_PUBLIC_SITE_URL}/auth/callback`,
+      redirectTo: `${origin}/auth/callback`,
     },
   });
 
@@ -107,8 +121,9 @@ export async function sendPasswordReset(
   }
 
   const supabase = await createSupabaseServerClient();
+  const origin = await siteOrigin();
   await supabase.auth.resetPasswordForEmail(parsed.data, {
-    redirectTo: `${publicEnv.NEXT_PUBLIC_SITE_URL}/auth/callback?next=/auth/reset-password`,
+    redirectTo: `${origin}/auth/callback?next=/auth/reset-password`,
   });
 
   logger.info("auth.password_reset_requested");
