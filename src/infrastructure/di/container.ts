@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import {
   createSupabaseAdminClient,
+  createSupabaseAnonClient,
   createSupabaseServerClient,
 } from "@/infrastructure/supabase/server";
 import { SupabaseProductRepository } from "@/infrastructure/repositories/supabase-product-repository";
@@ -101,7 +102,7 @@ export function adminContainer() {
   const db = createSupabaseAdminClient();
   const repos = buildRepos(db);
   const env = serverEnv();
-  const auth = new SupabaseAuthGateway(db);
+  const auth = new SupabaseAuthGateway(db, createSupabaseAnonClient());
   return {
     db,
     ...repos,

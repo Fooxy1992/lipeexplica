@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { authBaseUrl } from "@/lib/env";
 import type {
   AuthGateway,
   AuthUser,
@@ -11,7 +12,35 @@ import { DomainError } from "@/core/domain/errors/domain-error";
  * OTP login works immediately — email arrives pre-confirmed.
  */
 export class SupabaseAuthGateway implements AuthGateway {
-  constructor(private readonly admin: SupabaseClient) {}
+  /**
+   * @param admin service-role client (user management)
+   * @param anon  session-less anon client (GoTrue email sending)
+   */
+  constructor(
+    private readonly admin: SupabaseClient,
+    private readonly anon: SupabaseClient,
+  ) {}
+
+  async sendAccessLink(email: string, next = "/library"): Promise<void> {
+    const redirectTo = `${authBaseUrl()}/auth/callback?next=${encodeURIComponent(next)}`;
+
+    const { error } = await this.anon.auth.signInWithOtp({
+      email: email.trim().toLowerCase(),
+      options: {
+        emailRedirectTo: redirectTo,
+        // The account already exists at this point (created above); never
+        // let this path mint accounts on its own.
+        shouldCreateUser: false,
+      },
+    });
+
+    if (error) {
+      throw new DomainError(
+        "INTERNAL",
+        `Falha ao enviar link de acesso: ${error.message}`,
+      );
+    }
+  }
 
   async findOrCreateUserByEmail(
     email: string,

@@ -36,6 +36,17 @@ export const publicEnv = publicSchema.parse({
     process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || undefined,
 });
 
+/**
+ * Base URL for links emailed to users (magic link, recovery, access).
+ * AUTH_REDIRECT_BASE_URL is server-only, so Turbopack never inlines a
+ * localhost value into the production bundle.
+ */
+export function authBaseUrl(): string {
+  const serverVar = process.env.AUTH_REDIRECT_BASE_URL;
+  if (serverVar && !serverVar.includes("localhost")) return serverVar;
+  return publicEnv.NEXT_PUBLIC_SITE_URL;
+}
+
 let cachedServerEnv: z.infer<typeof serverSchema> | null = null;
 
 /** Lazily-validated server env. Call only from server code. */

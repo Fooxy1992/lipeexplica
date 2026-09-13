@@ -41,7 +41,7 @@ export class CreateCheckoutSession {
       productId: product.id,
       productSlug: product.slug,
       customerEmail: input.customerEmail,
-      successUrl: `${input.siteUrl}/login?compra=ok`,
+      successUrl: `${input.siteUrl}/obrigado`,
       cancelUrl: `${input.siteUrl}/50dinamicas#comprar`,
     });
 

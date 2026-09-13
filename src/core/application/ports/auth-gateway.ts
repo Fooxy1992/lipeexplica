@@ -13,4 +13,11 @@ export interface AuthGateway {
     email: string,
     metadata?: { name?: string; phone?: string },
   ): Promise<AuthUser>;
+
+  /**
+   * Emails the buyer a one-click access link (Supabase magic link, branded
+   * template). Used right after payment so access does not depend on the
+   * buyer remembering to request a login link.
+   */
+  sendAccessLink(email: string, next?: string): Promise<void>;
 }

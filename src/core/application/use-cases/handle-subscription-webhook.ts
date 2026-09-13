@@ -43,6 +43,15 @@ export class HandleSubscriptionWebhook {
 
     // No purchase row created — access is granted by the subscriptions table.
     // Creating a permanent purchase would bypass cancellation enforcement.
+    try {
+      await this.auth.sendAccessLink(email, '/library');
+      this.logger.info('sub_webhook.access_link_sent', { userId: user.id });
+    } catch (err) {
+      this.logger.error('sub_webhook.access_link_failed', {
+        error: err instanceof Error ? err.message : String(err),
+      });
+    }
+
     this.logger.info('sub_webhook.checkout.completed', { userId: user.id, productId });
   }
 

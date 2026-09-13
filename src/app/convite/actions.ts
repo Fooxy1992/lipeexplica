@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import {
   createSupabaseAdminClient,
+  createSupabaseAnonClient,
   createSupabaseServerClient,
 } from "@/infrastructure/supabase/server";
 import { SupabaseAuthGateway } from "@/infrastructure/supabase/supabase-auth-gateway";
@@ -92,7 +93,7 @@ export async function redeemInvite(
     userId = sessionUser.id;
     userEmail = sessionUser.email ?? email;
   } else {
-    const auth = new SupabaseAuthGateway(admin);
+    const auth = new SupabaseAuthGateway(admin, createSupabaseAnonClient());
     const created = await auth.findOrCreateUserByEmail(email, { name, password });
     userId = created.id;
     userEmail = created.email;

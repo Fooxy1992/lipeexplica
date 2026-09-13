@@ -33,6 +33,19 @@ export async function createSupabaseServerClient() {
 }
 
 /**
+ * Anon client with no session attached. For server-side jobs that must act as
+ * an anonymous caller — e.g. asking GoTrue to email a magic link from the
+ * Stripe webhook, where there are no cookies to bind to.
+ */
+export function createSupabaseAnonClient() {
+  return createClient(
+    publicEnv.NEXT_PUBLIC_SUPABASE_URL,
+    publicEnv.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    { auth: { autoRefreshToken: false, persistSession: false } },
+  );
+}
+
+/**
  * Admin client (service role — BYPASSES RLS). Server-only.
  * Used exclusively by the Stripe webhook and admin use cases.
  */

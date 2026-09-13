@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { CheckCircle2, Mail, MessageCircle } from "lucide-react";
+import { CheckCircle2, Mail } from "lucide-react";
 
 export const metadata: Metadata = { title: "Compra confirmada" };
 
@@ -29,18 +29,16 @@ export default function ObrigadoPage() {
         <div className="mt-6 space-y-3 text-left text-sm">
           <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/5 px-4 py-3">
             <Mail className="h-4 w-4 shrink-0 text-[var(--gold)]" />
-            Um email com o botão <strong>Acessar Biblioteca</strong>
-          </div>
-          <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/5 px-4 py-3">
-            <MessageCircle className="h-4 w-4 shrink-0 text-[var(--gold)]" />
-            Uma mensagem no WhatsApp com o link de acesso
+            Um email com o botão <strong>Acessar Biblioteca</strong>, enviado
+            para o endereço que você usou na compra
           </div>
         </div>
         <p className="mt-6 text-xs text-white/50">
-          Entre com o <strong>mesmo email usado na compra</strong>.
+          Não chegou em alguns minutos? Confira o spam — ou entre abaixo com o{" "}
+          <strong>mesmo email usado na compra</strong>.
         </p>
         <Link
-          href="/login"
+          href="/login?compra=ok"
           className="mt-6 inline-block rounded-full px-8 py-3.5 text-sm font-semibold text-[oklch(0.20_0.04_265)] transition hover:brightness-105"
           style={{
             background:

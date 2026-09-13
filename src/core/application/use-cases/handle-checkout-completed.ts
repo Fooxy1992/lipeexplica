@@ -23,7 +23,8 @@ export interface CheckoutCompletedEvent {
  * 1. Idempotency: skip if this session was already processed.
  * 2. Find-or-create the buyer account (magic link login works right away).
  * 3. Persist the purchase → access to the product is unlocked.
- * 4. Notify n8n (WhatsApp + Email). Delivery failures never fail the webhook.
+ * 4. Email the buyer a one-click access link, at the address they paid with.
+ * 5. Notify n8n (WhatsApp + Email). Delivery failures never fail the webhook.
  */
 export class HandleCheckoutCompleted {
   constructor(
@@ -76,6 +77,17 @@ export class HandleCheckoutCompleted {
       status: "paid",
     });
     log.info("purchase.created", { purchaseId: purchase.id, userId: user.id });
+
+    // Access link straight to the address that paid. Best effort: a bounced
+    // email must never make Stripe retry a purchase that is already granted.
+    try {
+      await this.auth.sendAccessLink(event.customerEmail, "/library");
+      log.info("purchase.access_link_sent");
+    } catch (err) {
+      log.error("purchase.access_link_failed", {
+        error: err instanceof Error ? err.message : String(err),
+      });
+    }
 
     try {
       await this.notifications.notifyPurchase({
