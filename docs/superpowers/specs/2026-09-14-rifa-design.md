@@ -11,17 +11,24 @@ Adicionar sistema de rifa ao site lipeexplica. Prêmio: kimono completo (R$400-6
 
 ---
 
-## Pacotes de bilhetes
+## Precificação por quantidade
 
-| Pacote | Preço | Por bilhete |
-|--------|-------|-------------|
-| 1 bilhete | R$25 | R$25 |
-| 3 bilhetes | R$60 | R$20 |
-| 5 bilhetes | R$90 | R$18 |
-| 10 bilhetes | R$150 | R$15 |
+Comprador digita quantos bilhetes quer (mínimo 1, máximo = bilhetes disponíveis). Preço calculado automaticamente por faixa:
+
+| Quantidade | Preço/bilhete | Exemplo |
+|------------|---------------|---------|
+| 1-2 | R$25 | 2 = R$50 |
+| 3-4 | R$20 | 4 = R$80 |
+| 5-9 | R$18 | 7 = R$126 |
+| 10+ | R$15 | 12 = R$180 |
 
 **Total de bilhetes:** 200  
 **Pagamento:** Stripe (cartão + PIX)
+
+### Bloqueio ao atingir limite
+- Frontend: botão de compra desabilitado quando `available_tickets = 0`
+- Backend: `POST /api/raffle/checkout` retorna 409 se bilhetes insuficientes
+- Stripe: sessões são criadas sob demanda (não há link fixo para cancelar); a rejeição acontece antes da sessão ser criada
 
 ---
 
@@ -63,8 +70,8 @@ UNIQUE(raffle_id, ticket_number)
 id                  uuid PRIMARY KEY DEFAULT gen_random_uuid()
 raffle_id           uuid REFERENCES raffles(id) NOT NULL
 stripe_session_id   text UNIQUE
-package_size        int NOT NULL  -- 1 | 3 | 5 | 10
-amount_cents        int NOT NULL
+ticket_quantity     int NOT NULL  -- quantidade digitada pelo comprador
+amount_cents        int NOT NULL  -- calculado pela faixa de preço
 status              text NOT NULL DEFAULT 'pending'
   -- 'pending' | 'paid' | 'failed' | 'expired'
 buyer_name          text NOT NULL
@@ -106,11 +113,12 @@ Segue o padrão existente: domain entities → use cases → ports → infrastru
 ## API Routes
 
 ### `POST /api/raffle/checkout`
-- Recebe: `{ raffle_id, package_size, buyer_name, buyer_email, buyer_phone }`
-- Reserva `package_size` bilhetes atomicamente via Supabase transaction (`SELECT FOR UPDATE`)
-- Cria Stripe Checkout Session com line item do pacote
+- Recebe: `{ raffle_id, quantity, buyer_name, buyer_email, buyer_phone }`
+- Valida `quantity >= 1` e `quantity <= available_tickets`; retorna 409 se insuficiente
+- Calcula `amount_cents` pela faixa de preço (1-2 / 3-4 / 5-9 / 10+)
+- Reserva `quantity` bilhetes atomicamente via Supabase transaction (`SELECT FOR UPDATE`)
+- Cria Stripe Checkout Session com o valor calculado
 - Retorna: `{ session_url }`
-- Race condition tratada: se não houver bilhetes suficientes disponíveis, retorna 409
 
 ### `POST /api/raffle/webhook` (ou reutiliza `/api/stripe/webhook`)
 - Evento `checkout.session.completed` → chama `confirm-raffle-payment`
@@ -147,7 +155,9 @@ Mesma cron (ou cron separada a cada hora) chama `release-expired-reservations` p
 - Imagem do kimono
 - Contador de bilhetes restantes (atualiza a cada 30s via polling)
 - Progresso visual (barra ou grid de 200 bilhetes)
-- Cards de pacotes com botão de compra
+- Input numérico de quantidade com preview do preço calculado em tempo real
+- Sugestões rápidas (ex: botões "1", "3", "5", "10") que preenchem o input
+- Botão de compra desabilitado quando `available_tickets = 0`
 - Informações do sorteio (data prevista se sold_out, regras)
 
 ### `/rifa/confirmacao/[token]` — Pós-compra
