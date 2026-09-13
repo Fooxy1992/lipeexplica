@@ -113,8 +113,8 @@ export function Hero() {
 
           <div className="relative h-72 w-72 sm:h-[400px] sm:w-[400px] lg:h-[460px] lg:w-[460px]">
             <Image
-              src="/character.webp"
-              alt="Lipe, o personagem que explica o Jiu-Jitsu no canal LipeExplica"
+              src="/mascote.webp"
+              alt="Mascote do LipeExplica — personagem com moletom vermelho apontando para cima"
               fill
               priority
               sizes="(max-width: 640px) 288px, (max-width: 1024px) 400px, 460px"
