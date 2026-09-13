@@ -1,4 +1,4 @@
-import { NextResponse, type NextRequest } from "next/server";
+import { NextResponse, type NextRequest, type NextFetchEvent } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 
 /**
@@ -9,7 +9,14 @@ import { createServerClient } from "@supabase/ssr";
  */
 const PROTECTED_PREFIXES = ["/library", "/books", "/dashboard", "/admin"];
 
-export async function middleware(request: NextRequest) {
+/**
+ * Throttle for the last_seen_at write: one UPDATE per user per window, marked
+ * by a cookie so we never pay an extra SELECT to decide.
+ */
+const LAST_SEEN_COOKIE = "ls_ping";
+const LAST_SEEN_WINDOW_SECONDS = 15 * 60;
+
+export async function middleware(request: NextRequest, event: NextFetchEvent) {
   let response = NextResponse.next({ request });
 
   const supabase = createServerClient(
@@ -38,6 +45,22 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
+  // Activity heartbeat: auth.users.last_sign_in_at only moves on a fresh
+  // sign-in, so a long-lived refreshed session looks inactive forever.
+  const needsPing = user && !request.cookies.get(LAST_SEEN_COOKIE);
+  if (needsPing) {
+    const userId = user.id;
+    event.waitUntil(
+      (async () => {
+        // Best effort: never let the heartbeat break a request.
+        await supabase
+          .from("profiles")
+          .update({ last_seen_at: new Date().toISOString() })
+          .eq("id", userId);
+      })().catch(() => undefined),
+    );
+  }
+
   const { pathname } = request.nextUrl;
   const isProtected = PROTECTED_PREFIXES.some((p) => pathname.startsWith(p));
 
@@ -46,6 +69,16 @@ export async function middleware(request: NextRequest) {
     url.pathname = "/login";
     url.searchParams.set("next", pathname);
     return NextResponse.redirect(url);
+  }
+
+  if (needsPing) {
+    response.cookies.set(LAST_SEEN_COOKIE, "1", {
+      maxAge: LAST_SEEN_WINDOW_SECONDS,
+      httpOnly: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      path: "/",
+    });
   }
 
   return response;

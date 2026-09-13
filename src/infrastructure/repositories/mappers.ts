@@ -50,6 +50,7 @@ export function toProfile(row: ProfileRow): Profile {
     phone: row.phone,
     isAdmin: row.is_admin,
     createdAt: row.created_at,
+    lastSeenAt: row.last_seen_at ?? null,
   };
 }
 

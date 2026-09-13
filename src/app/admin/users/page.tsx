@@ -53,6 +53,10 @@ export default async function AdminUsersPage() {
         .map((p) => p.last_accessed_at)
         .sort()
         .at(-1);
+      const lastActivity = [profile?.lastSeenAt, lastAccess, u.last_sign_in_at]
+        .filter((d): d is string => Boolean(d))
+        .sort()
+        .at(-1);
       return {
         id: u.id,
         email: u.email ?? "—",
@@ -64,16 +68,27 @@ export default async function AdminUsersPage() {
         owned,
         opens,
         lastAccess,
+        // Activity = heartbeat, reading, or (as a floor) the last real sign-in.
+        lastActivity,
+        // Bought but never signed in: the account exists only because the
+        // Stripe webhook created it. Actionable — resend the magic link.
+        neverActivated: !lastActivity,
       };
     })
     .sort((a, b) => (b.createdAt ?? "").localeCompare(a.createdAt ?? ""));
+
+  const inactiveCount = users.filter((u) => u.neverActivated).length;
 
   return (
     <div>
       <h1 className="font-display text-3xl font-semibold">Usuários</h1>
       <p className="mt-2 text-sm text-muted-foreground">
-        {users.length} usuário(s). Conceder acesso cria uma compra cortesia
-        (R$ 0). Revogar marca as compras do produto como reembolsadas.
+        {users.length} usuário(s)
+        {inactiveCount > 0
+          ? ` · ${inactiveCount} nunca acessaram a conta`
+          : ""}
+        . Conceder acesso cria uma compra cortesia (R$ 0). Revogar marca as
+        compras do produto como reembolsadas.
       </p>
 
       <div className="mt-8 space-y-4">
@@ -88,13 +103,35 @@ export default async function AdminUsersPage() {
                       Admin
                     </span>
                   ) : null}
+                  {u.neverActivated ? (
+                    <span className="ml-2 rounded-full border border-amber-500/40 bg-amber-500/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-amber-600">
+                      Não ativada
+                    </span>
+                  ) : null}
                 </p>
                 <p className="text-sm text-muted-foreground">{u.email}</p>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  Cadastro: {u.createdAt ? formatDate(u.createdAt) : "—"} · Último
-                  login: {u.lastSignIn ? formatDate(u.lastSignIn) : "nunca"}
+                  Cadastro: {u.createdAt ? formatDate(u.createdAt) : "—"}
                   {u.phone ? ` · ${u.phone}` : ""}
                 </p>
+                {u.neverActivated ? (
+                  <p className="mt-1 text-xs font-medium text-amber-600">
+                    Nunca acessou · conta criada na compra
+                  </p>
+                ) : (
+                  <>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      Última atividade:{" "}
+                      {u.lastActivity ? formatDate(u.lastActivity) : "—"}
+                    </p>
+                    <p
+                      className="mt-1 text-xs text-muted-foreground"
+                      title="last_sign_in_at só muda em login novo — sessões renovadas não contam"
+                    >
+                      Último login: {u.lastSignIn ? formatDate(u.lastSignIn) : "nunca"}
+                    </p>
+                  </>
+                )}
                 <p className="mt-1 text-xs text-muted-foreground">
                   Aberturas do livro: <strong>{u.opens}</strong>
                   {u.lastAccess ? ` · Última leitura: ${formatDate(u.lastAccess)}` : ""}
