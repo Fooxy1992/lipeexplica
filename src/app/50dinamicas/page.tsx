@@ -25,7 +25,7 @@ const OG_IMAGE = "https://www.lipeexplica.com/social-final/c01-hook.webp";
 export const metadata: Metadata = {
   title: "50 Dinâmicas para Jiu-Jitsu Infantil — Aulas mais divertidas e organizadas",
   description:
-    "50 dinâmicas e brincadeiras prontas para professores de Jiu-Jitsu Infantil. Livro interativo com busca, favoritos e progresso. Aquecimento, coordenação, jogos, guarda, passagem e mais. Acesso vitalício.",
+    "50 dinâmicas e brincadeiras prontas para professores de Jiu-Jitsu Infantil. Livro interativo com busca, favoritos e progresso. Aquecimento, coordenação, jogos, guarda, passagem e mais. Planos a partir de R$14,90/mês.",
   keywords: [
     "dinâmicas para jiu-jitsu infantil",
     "brincadeiras para jiu-jitsu infantil",
@@ -42,7 +42,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: "50 Dinâmicas para Jiu-Jitsu Infantil",
-    description: "50 dinâmicas prontas para aplicar nas suas aulas. Aquecimento, jogos, coordenação, guarda e muito mais. Acesso vitalício por R$14,90.",
+    description: "50 dinâmicas prontas para aplicar nas suas aulas. Aquecimento, jogos, coordenação, guarda e muito mais. A partir de R$14,90/mês.",
     url: PAGE_URL,
     siteName: "LipeExplica",
     locale: "pt_BR",
@@ -52,7 +52,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "50 Dinâmicas para Jiu-Jitsu Infantil",
-    description: "50 dinâmicas prontas para aplicar. Acesso vitalício por R$14,90.",
+    description: "50 dinâmicas prontas para aplicar. A partir de R$14,90/mês.",
     images: [OG_IMAGE],
   },
 };
@@ -71,8 +71,9 @@ const jsonLd = {
       image: "https://www.lipeexplica.com/book/capa.webp",
       brand: { "@type": "Brand", name: "LipeExplica" },
       offers: {
-        "@type": "Offer",
-        price: "14.90",
+        "@type": "AggregateOffer",
+        lowPrice: "14.90",
+        highPrice: "24.90",
         priceCurrency: "BRL",
         availability: "https://schema.org/InStock",
         seller: { "@type": "Organization", name: "LipeExplica" },
@@ -96,7 +97,7 @@ const jsonLd = {
         },
         {
           "@type": "Question",
-          name: "Como acesso o livro após a compra?",
+          name: "Como acesso o livro após assinar?",
           acceptedAnswer: {
             "@type": "Answer",
             text: "Imediatamente pelo site lipeexplica.com, em qualquer dispositivo com internet — celular, tablet ou computador.",
@@ -142,6 +143,8 @@ export default async function CinquentaDinamicasPage() {
     );
   }
 
+  const plans = await c.productPlans.listByProduct(product.id);
+
   return (
     <div className="site-dark">
       <script
@@ -150,8 +153,8 @@ export default async function CinquentaDinamicasPage() {
       />
       <Navbar isLoggedIn={isLoggedIn} />
       <main>
-        {/* 1. Hero — DynamicPreview como elemento principal + preço */}
-        <Hero product={product} />
+        {/* 1. Hero — DynamicPreview como elemento principal + planos */}
+        <Hero product={product} plans={plans} />
 
         {/* 2. Problema — dor do professor */}
         <ProblemSection />
@@ -166,10 +169,10 @@ export default async function CinquentaDinamicasPage() {
         <DemoSection product={product} />
 
         {/* 6. Benefícios — resultados reais */}
-        <Benefits product={product} />
+        <Benefits />
 
         {/* 7. Depoimentos + contadores */}
-        <Testimonials product={product} />
+        <Testimonials />
 
         {/* 8. Sobre o Lipe */}
         <AboutSection />
@@ -181,12 +184,12 @@ export default async function CinquentaDinamicasPage() {
         <Faq />
 
         {/* 11. CTA final */}
-        <FinalCta product={product} />
+        <FinalCta product={product} plans={plans} />
       </main>
       <Footer />
 
       {/* Mobile sticky CTA */}
-      <StickyCta product={product} />
+      <StickyCta />
     </div>
   );
 }

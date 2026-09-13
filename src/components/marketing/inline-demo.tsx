@@ -158,8 +158,8 @@ export function InlineDemo({ productId, onBuy }: InlineDemoProps) {
                   <div className="w-full space-y-2">
                     {[
                       "Todas as 50 dinâmicas completas",
-                      "Atualizações semanais de conteúdo",
-                      "Grupo exclusivo no WhatsApp",
+                      "Dinâmicas novas todo mês no plano Completo",
+                      "Busca, favoritos e progresso",
                       "Acesso em qualquer dispositivo",
                     ].map((t) => (
                       <div key={t} className="flex items-center gap-2.5 text-sm text-white/70">

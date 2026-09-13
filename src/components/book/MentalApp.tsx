@@ -13,70 +13,59 @@ import {
   Moon,
   Sun,
   X,
-  Award,
+  BookOpen,
   Sparkles,
   Library,
 } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
-import { dinamicas, categorias } from "@/data/dinamicas";
+import { situacoes, categoriasMentais, type CategoriaMental } from "@/data/mental";
 import {
   useReadingProgress,
   type InitialProgress,
 } from "@/hooks/use-reading-progress";
-import { BookCover } from "./BookCover";
-import { BookSpread } from "./BookSpread";
-import { BookImage } from "./BookImage";
+import { MentalPage } from "./MentalPage";
 import { PremiumConversionScreen } from "./PremiumConversionScreen";
 import { PreviewBanner } from "./PreviewBanner";
-import type { Categoria } from "@/types/book";
 
-interface BookAppProps {
-  /** Product being read — progress is synced per product. */
+interface MentalAppProps {
   productId: string;
-  /** Server-side progress snapshot (null on first read). */
   initialProgress: InitialProgress | null;
-  /** Whether the user has full or preview access. */
-  accessLevel: 'full' | 'preview';
-  /** Page indices (0-based) visible to preview users. Empty when accessLevel='full'. */
+  accessLevel: "full" | "preview";
   previewPageIndices: number[];
 }
 
-/**
- * Interactive book reader for "50 Dinâmicas para Jiu-Jitsu Infantil".
- * Rendered only behind the access gate in /books/[slug].
- */
-export function BookApp({ productId, initialProgress, accessLevel, previewPageIndices }: BookAppProps) {
+export function MentalApp({
+  productId,
+  initialProgress,
+  accessLevel,
+  previewPageIndices,
+}: MentalAppProps) {
   const { state, hydrated, toggleFavorite, setLastPage, toggleTheme } =
-    useReadingProgress(productId, dinamicas.length, initialProgress);
+    useReadingProgress(productId, situacoes.length, initialProgress);
+
   const [opened, setOpened] = useState(false);
   const [page, setPage] = useState(0);
   const [direction, setDirection] = useState<1 | -1>(1);
   const [panel, setPanel] = useState<null | "index" | "favorites" | "search">(null);
   const [query, setQuery] = useState("");
-  const [catFilter, setCatFilter] = useState<Categoria | "Todas">("Todas");
-  const [showCert, setShowCert] = useState(false);
+  const [catFilter, setCatFilter] = useState<CategoriaMental | "Todas">("Todas");
   const [showConversionScreen, setShowConversionScreen] = useState(false);
+  const [coverFailed, setCoverFailed] = useState(false);
 
   const previewSet = useMemo(() => new Set(previewPageIndices), [previewPageIndices]);
-  const isPreview = accessLevel === 'preview';
+  const isPreview = accessLevel === "preview";
+  const total = situacoes.length;
+  const current = situacoes[page] ?? situacoes[0]!;
 
-  const total = dinamicas.length;
-  const current = dinamicas[page] ?? dinamicas[0]!;
-
-  // Restore last page on open
   useEffect(() => {
     if (opened && hydrated) setPage(state.lastPage || 0);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [opened, hydrated]);
 
-  // Persist page on change
   useEffect(() => {
     if (!opened || !hydrated) return;
     setLastPage(page, total);
-    if (page === total - 1) {
-      const t = setTimeout(() => setShowCert(true), 800);
-      return () => clearTimeout(t);
-    }
   }, [page, opened, hydrated, total, setLastPage]);
 
   const goToPage = (idx: number, dir?: 1 | -1) => {
@@ -119,44 +108,135 @@ export function BookApp({ productId, initialProgress, accessLevel, previewPageIn
     if (!t) return;
     const dx = t.clientX - touchStart.x;
     const dy = t.clientY - touchStart.y;
-    // only trigger if clearly horizontal (|dx| > |dy| and exceeds threshold)
     if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 60) go(dx < 0 ? 1 : -1);
     setTouchStart(null);
   };
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return dinamicas.filter((d) => {
-      if (catFilter !== "Todas" && d.categoria !== catFilter) return false;
+    return situacoes.filter((s) => {
+      if (catFilter !== "Todas" && s.categoria !== catFilter) return false;
       if (!q) return true;
       return (
-        d.titulo.toLowerCase().includes(q) ||
-        d.categoria.toLowerCase().includes(q) ||
-        d.idade.toLowerCase().includes(q) ||
-        d.objetivo.toLowerCase().includes(q)
+        s.titulo.toLowerCase().includes(q) ||
+        s.categoria.toLowerCase().includes(q) ||
+        s.situacao.toLowerCase().includes(q) ||
+        s.frase.toLowerCase().includes(q)
       );
     });
   }, [query, catFilter]);
 
   const progressPct = ((page + 1) / total) * 100;
 
+  // ── COVER ──────────────────────────────────────────────────────────
   if (!opened) {
     return (
-      <BookCover
-        count={total}
-        minutes={Math.round(total * 1.2)}
-        onOpen={() => setOpened(true)}
-      />
+      <div className="grid-bg relative flex min-h-dvh items-center justify-center overflow-hidden bg-[#131313] px-6 py-10">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -top-40 left-1/2 h-[600px] w-[600px] -translate-x-1/2 rounded-full bg-[#FF4D2D]/10 blur-3xl"
+        />
+        <div className="relative grid w-full max-w-6xl items-center gap-14 md:grid-cols-2">
+          {/* 3D book mockup */}
+          <div className="mx-auto" style={{ perspective: "1800px" }}>
+            <motion.div
+              initial={{ rotateY: 20, rotateX: 8, y: 40, opacity: 0 }}
+              animate={{ rotateY: -18, rotateX: 6, y: 0, opacity: 1 }}
+              transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+              whileHover={{ rotateY: -12, rotateX: 4 }}
+              className="relative aspect-[3/4] w-[280px] sm:w-[340px]"
+              style={{ transformStyle: "preserve-3d" }}
+            >
+              <div
+                aria-hidden
+                className="absolute inset-y-0 -left-1 w-3 rounded-l-md"
+                style={{ background: "linear-gradient(90deg, #000, transparent)", transform: "translateZ(-6px)" }}
+              />
+              <div className="absolute inset-0 overflow-hidden rounded-r-2xl rounded-l-md border border-[#FF4D2D]/25 shadow-[0_30px_60px_-20px_rgba(0,0,0,0.8)]">
+                {!coverFailed ? (
+                  <Image
+                    src="/mental-cover.webp"
+                    alt="Capa: O Mental do Tatame"
+                    fill
+                    priority
+                    sizes="340px"
+                    className="object-cover"
+                    onError={() => setCoverFailed(true)}
+                  />
+                ) : (
+                  <div className="absolute inset-0 bg-gradient-to-br from-[#1a0e0e] via-[#1c1b1b] to-[#131313]" />
+                )}
+                <div
+                  aria-hidden
+                  className="absolute inset-0"
+                  style={{ background: "linear-gradient(180deg, rgba(19,19,19,0.5) 0%, transparent 35%, transparent 55%, rgba(19,19,19,0.9) 100%)" }}
+                />
+                <div className="absolute inset-0 flex flex-col items-center justify-between px-6 py-7 text-center">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#ffb4a5]">lipeexplica</p>
+                  <div className="mt-auto">
+                    <p className="text-xs font-semibold uppercase tracking-[0.35em] text-white/80">O Mental do</p>
+                    <h1 className="mt-1 text-3xl font-black leading-tight text-white sm:text-4xl">
+                      Tatame
+                    </h1>
+                    <p className="mt-2 text-[11px] leading-relaxed text-white/70">
+                      50 situações de mentalidade no jiu-jitsu
+                    </p>
+                    <p className="mt-4 text-[10px] uppercase tracking-[0.4em] text-white/40">OSS 🥋</p>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+
+          {/* Info column */}
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3, duration: 0.8 }}
+            className="text-white"
+          >
+            <p className="mb-3 inline-flex items-center gap-2 rounded-full border border-[#FF4D2D]/30 bg-[#FF4D2D]/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-widest text-[#ffb4a5]">
+              <Sparkles className="h-3 w-3" /> Edição interativa
+            </p>
+            <h2 className="text-4xl font-black leading-tight sm:text-5xl">
+              O que passa pela sua cabeça{" "}
+              <span className="text-[#FF4D2D]">no tatame</span> é o que te limita.
+            </h2>
+            <p className="mt-4 max-w-md text-sm leading-relaxed text-[#a1a1aa]">
+              50 situações reais que todo praticante de jiu-jitsu vive. Cada uma com a
+              realidade por trás do pensamento, o que fazer, e uma frase para levar ao treino.
+            </p>
+
+            <div className="mt-8 grid max-w-md grid-cols-2 gap-4">
+              <CoverStat icon={<BookOpen className="h-4 w-4" />} label="Situações" value={String(total)} />
+              <CoverStat icon={<Sparkles className="h-4 w-4" />} label="Categorias" value="6" />
+            </div>
+
+            <motion.button
+              onClick={() => setOpened(true)}
+              whileHover={{ y: -2 }}
+              whileTap={{ scale: 0.98 }}
+              className="btn-primary mt-10"
+            >
+              <BookOpen className="h-4 w-4" />
+              Abrir Livro
+            </motion.button>
+
+            <p className="mt-6 text-xs text-white/40">Autor: lipeexplica — OSS 🥋</p>
+          </motion.div>
+        </div>
+      </div>
     );
   }
 
+  // ── READER ─────────────────────────────────────────────────────────
   return (
     <div className="site-dark relative min-h-dvh bg-background">
       {/* Top bar */}
       <header className="sticky top-0 z-30 border-b border-border/70 bg-background/80 backdrop-blur-md">
         {isPreview && (
           <PreviewBanner
-            productSlug="50dinamicas"
+            productSlug="mental-do-tatame"
             previewCount={previewPageIndices.length}
             totalCount={total}
           />
@@ -172,10 +252,10 @@ export function BookApp({ productId, initialProgress, accessLevel, previewPageIn
             </button>
             <div className="min-w-0">
               <p className="truncate font-display text-sm font-semibold">
-                50 Dinâmicas · Jiu-Jitsu Infantil
+                O Mental do Tatame
               </p>
               <p className="truncate text-[10px] uppercase tracking-widest text-muted-foreground">
-                {current.categoria} · Dinâmica {current.id}
+                {current.categoria} · Situação {current.id}
               </p>
             </div>
           </div>
@@ -199,7 +279,7 @@ export function BookApp({ productId, initialProgress, accessLevel, previewPageIn
                 const rand = Math.floor(Math.random() * total);
                 goToPage(rand, rand > page ? 1 : -1);
               }}
-              label="Dinâmica aleatória"
+              label="Situação aleatória"
             >
               <Shuffle className="h-4 w-4" />
             </IconBtn>
@@ -211,14 +291,14 @@ export function BookApp({ productId, initialProgress, accessLevel, previewPageIn
             </IconBtn>
           </div>
         </div>
-        {/* progress */}
+        {/* Progress bar */}
         <div className="h-0.5 w-full bg-muted">
           <motion.div
             className="h-full"
             initial={false}
             animate={{ width: `${progressPct}%` }}
             transition={{ duration: 0.6, ease: "easeOut" }}
-            style={{ background: "linear-gradient(90deg, var(--royal), var(--gold))" }}
+            style={{ background: "linear-gradient(90deg, #FF4D2D, #818cf8)" }}
           />
         </div>
       </header>
@@ -229,7 +309,6 @@ export function BookApp({ productId, initialProgress, accessLevel, previewPageIn
         onTouchStart={onTouchStart}
         onTouchEnd={onTouchEnd}
       >
-        {/* prev */}
         <button
           onClick={() => go(-1)}
           aria-label="Página anterior"
@@ -239,19 +318,29 @@ export function BookApp({ productId, initialProgress, accessLevel, previewPageIn
           <ChevronLeft className="h-5 w-5" />
         </button>
 
-        {/* Mobile: fill available viewport height. Desktop: fixed aspect ratio. */}
         <div className="relative h-[calc(100dvh-140px)] w-full max-w-[560px] md:h-auto md:aspect-[4/5]">
-          <BookSpread
-            dinamica={current}
-            index={page}
-            total={total}
-            direction={direction}
-            isFavorite={state.favorites.includes(current.id)}
-            onToggleFavorite={() => toggleFavorite(current.id)}
-          />
+          <AnimatePresence mode="popLayout" initial={false} custom={direction}>
+            <motion.div
+              key={current.id}
+              custom={direction}
+              initial={{ rotateY: direction === 1 ? -90 : 90, opacity: 0.4, transformOrigin: direction === 1 ? "left center" : "right center" }}
+              animate={{ rotateY: 0, opacity: 1, transformOrigin: direction === 1 ? "left center" : "right center" }}
+              exit={{ rotateY: direction === 1 ? 90 : -90, opacity: 0.3, transformOrigin: direction === 1 ? "right center" : "left center" }}
+              transition={{ duration: 0.75, ease: [0.22, 1, 0.36, 1] }}
+              className="absolute inset-0"
+              style={{ perspective: "2400px" }}
+            >
+              <MentalPage
+                situacao={current}
+                index={page}
+                total={total}
+                isFavorite={state.favorites.includes(current.id)}
+                onToggleFavorite={() => toggleFavorite(current.id)}
+              />
+            </motion.div>
+          </AnimatePresence>
         </div>
 
-        {/* next */}
         <button
           onClick={() => go(1)}
           aria-label="Próxima página"
@@ -262,7 +351,7 @@ export function BookApp({ productId, initialProgress, accessLevel, previewPageIn
         </button>
       </main>
 
-      {/* Bottom nav for mobile */}
+      {/* Mobile bottom nav */}
       <nav className="sticky bottom-0 z-20 border-t border-border/70 bg-background/90 backdrop-blur-md md:hidden">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
           <button
@@ -278,8 +367,8 @@ export function BookApp({ productId, initialProgress, accessLevel, previewPageIn
           <button
             onClick={() => go(1)}
             disabled={page === total - 1}
-            className="inline-flex items-center gap-1 rounded-full px-4 py-2 text-sm text-primary-foreground disabled:opacity-40"
-            style={{ background: "var(--royal)", color: "var(--royal-foreground)" }}
+            className="inline-flex items-center gap-1 rounded-full px-4 py-2 text-sm text-white disabled:opacity-40"
+            style={{ background: "#FF4D2D" }}
           >
             Próxima <ChevronRight className="h-4 w-4" />
           </button>
@@ -332,26 +421,19 @@ export function BookApp({ productId, initialProgress, accessLevel, previewPageIn
                     autoFocus
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
-                    placeholder="Buscar por título, idade, objetivo..."
-                    className="w-full rounded-full border border-border bg-card px-4 py-2.5 text-sm outline-none ring-0 focus:border-[var(--royal)]"
+                    placeholder="Buscar por título, categoria, frase..."
+                    className="w-full rounded-full border border-border bg-card px-4 py-2.5 text-sm outline-none focus:border-[#FF4D2D]"
                   />
                 </div>
               )}
 
               {(panel === "index" || panel === "search") && (
                 <div className="flex flex-wrap gap-1.5 border-b border-border p-4">
-                  <FilterChip
-                    active={catFilter === "Todas"}
-                    onClick={() => setCatFilter("Todas")}
-                  >
+                  <FilterChip active={catFilter === "Todas"} onClick={() => setCatFilter("Todas")}>
                     Todas
                   </FilterChip>
-                  {categorias.map((c) => (
-                    <FilterChip
-                      key={c}
-                      active={catFilter === c}
-                      onClick={() => setCatFilter(c as Categoria)}
-                    >
+                  {categoriasMentais.map((c) => (
+                    <FilterChip key={c} active={catFilter === c} onClick={() => setCatFilter(c)}>
                       {c}
                     </FilterChip>
                   ))}
@@ -364,18 +446,19 @@ export function BookApp({ productId, initialProgress, accessLevel, previewPageIn
                     <EmptyState
                       icon={<Heart className="h-6 w-6" />}
                       title="Nenhuma favorita ainda"
-                      body="Toque no coração de uma dinâmica para salvar aqui."
+                      body="Toque no coração de uma situação para salvar aqui."
                     />
                   ) : (
                     <ul className="space-y-2">
-                      {dinamicas
-                        .filter((d) => state.favorites.includes(d.id))
-                        .map((d) => (
+                      {situacoes
+                        .filter((s) => state.favorites.includes(s.id))
+                        .map((s) => (
                           <IndexItem
-                            key={d.id}
-                            d={d}
+                            key={s.id}
+                            s={s}
+                            active={s.id === current.id}
                             onClick={() => {
-                              const idx = dinamicas.findIndex((x) => x.id === d.id);
+                              const idx = situacoes.findIndex((x) => x.id === s.id);
                               goToPage(idx, idx > page ? 1 : -1);
                             }}
                           />
@@ -384,13 +467,13 @@ export function BookApp({ productId, initialProgress, accessLevel, previewPageIn
                   )
                 ) : (
                   <ul className="space-y-2">
-                    {filtered.map((d) => (
+                    {filtered.map((s) => (
                       <IndexItem
-                        key={d.id}
-                        d={d}
-                        active={d.id === current.id}
+                        key={s.id}
+                        s={s}
+                        active={s.id === current.id}
                         onClick={() => {
-                          const idx = dinamicas.findIndex((x) => x.id === d.id);
+                          const idx = situacoes.findIndex((x) => x.id === s.id);
                           goToPage(idx, idx > page ? 1 : -1);
                         }}
                       />
@@ -407,14 +490,14 @@ export function BookApp({ productId, initialProgress, accessLevel, previewPageIn
               </div>
 
               <div className="border-t border-border px-5 py-3 text-[11px] text-muted-foreground">
-                Você concluiu {Math.round((state.visited.length / total) * 100)}% do livro
+                Você leu {Math.round((state.visited.length / total) * 100)}% do livro
               </div>
             </motion.aside>
           </>
         )}
       </AnimatePresence>
 
-      {/* Premium conversion screen (preview mode) */}
+      {/* Premium conversion screen */}
       <AnimatePresence>
         {showConversionScreen && (
           <PremiumConversionScreen
@@ -423,83 +506,25 @@ export function BookApp({ productId, initialProgress, accessLevel, previewPageIn
           />
         )}
       </AnimatePresence>
-
-      {/* Certificate modal */}
-      <AnimatePresence>
-        {showCert && state.completed && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur"
-          >
-            <motion.div
-              initial={{ scale: 0.9, y: 20 }}
-              animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              className="relative w-full max-w-lg overflow-hidden rounded-3xl border border-border bg-card p-8 text-center shadow-2xl"
-            >
-              <div
-                aria-hidden
-                className="pointer-events-none absolute -top-24 left-1/2 h-64 w-64 -translate-x-1/2 rounded-full opacity-30 blur-3xl"
-                style={{ background: "radial-gradient(circle, var(--gold), transparent 60%)" }}
-              />
-              <div className="relative">
-                <div
-                  className="mx-auto grid h-16 w-16 place-items-center rounded-full"
-                  style={{ background: "linear-gradient(135deg, #FF4D2D, #ff7a5c)" }}
-                >
-                  <Award className="h-8 w-8 text-white" />
-                </div>
-                <p className="mt-4 text-[11px] font-semibold uppercase tracking-[0.3em] text-muted-foreground">
-                  <Sparkles className="mr-1 inline h-3 w-3" /> Parabéns
-                </p>
-                <h3 className="mt-2 font-display text-3xl font-semibold">
-                  Você concluiu o livro!
-                </h3>
-                <p className="mt-3 text-sm text-muted-foreground">
-                  50 dinâmicas percorridas. Agora é hora de levar tudo isso para o tatame
-                  e transformar as suas aulas.
-                </p>
-                <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
-                  <button
-                    onClick={() => window.print()}
-                    className="rounded-full px-5 py-2.5 text-sm font-semibold text-white shadow-md"
-                    style={{ background: "linear-gradient(135deg, #FF4D2D, #ff7a5c)" }}
-                  >
-                    Baixar Certificado
-                  </button>
-                  <button
-                    onClick={() => setShowCert(false)}
-                    className="rounded-full border border-border px-5 py-2.5 text-sm font-medium"
-                  >
-                    Continuar lendo
-                  </button>
-                </div>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </div>
   );
 }
 
 function IconBtn({
-  children,
-  label,
   onClick,
+  label,
+  children,
 }: {
-  children: React.ReactNode;
-  label: string;
   onClick: () => void;
+  label: string;
+  children: React.ReactNode;
 }) {
   return (
     <button
       onClick={onClick}
       aria-label={label}
       title={label}
-      className="grid h-10 w-10 place-items-center rounded-full border border-border bg-card text-foreground transition hover:bg-accent"
+      className="grid h-10 w-10 place-items-center rounded-full border border-border bg-card transition hover:bg-accent"
     >
       {children}
     </button>
@@ -507,27 +532,22 @@ function IconBtn({
 }
 
 function FilterChip({
-  children,
   active,
   onClick,
+  children,
 }: {
-  children: React.ReactNode;
   active: boolean;
   onClick: () => void;
+  children: React.ReactNode;
 }) {
   return (
     <button
       onClick={onClick}
-      className="rounded-full border px-3 py-1 text-[11px] font-medium transition"
-      style={
+      className={`rounded-full px-3 py-1 text-xs font-semibold transition ${
         active
-          ? {
-              background: "var(--royal)",
-              color: "var(--royal-foreground)",
-              borderColor: "var(--royal)",
-            }
-          : { borderColor: "var(--border)" }
-      }
+          ? "bg-[#FF4D2D] text-white"
+          : "border border-border bg-card text-muted-foreground hover:border-[#FF4D2D]/50"
+      }`}
     >
       {children}
     </button>
@@ -535,36 +555,26 @@ function FilterChip({
 }
 
 function IndexItem({
-  d,
-  onClick,
+  s,
   active,
+  onClick,
 }: {
-  d: (typeof dinamicas)[number];
-  onClick: () => void;
+  s: { id: number; titulo: string; categoria: string };
   active?: boolean;
+  onClick: () => void;
 }) {
   return (
     <li>
       <button
         onClick={onClick}
-        className="group flex w-full items-center gap-3 rounded-xl border border-border bg-card p-2.5 text-left transition hover:border-[var(--royal)] hover:bg-accent/50"
-        style={active ? { borderColor: "var(--royal)" } : undefined}
+        className={`w-full rounded-xl border px-4 py-3 text-left text-sm transition hover:border-[#FF4D2D]/40 ${
+          active ? "border-[#FF4D2D]/60 bg-[#FF4D2D]/10" : "border-border bg-card"
+        }`}
       >
-        <BookImage
-          dinamicaId={d.id}
-          categoria={d.categoria}
-          titulo={d.titulo}
-          className="h-14 w-20 shrink-0 rounded-md"
-        />
-        <div className="min-w-0 flex-1">
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
-            {String(d.id).padStart(2, "0")} · {d.categoria}
-          </p>
-          <p className="truncate font-display text-sm font-semibold">{d.titulo}</p>
-          <p className="truncate text-[11px] text-muted-foreground">
-            {d.idade} · {d.tempo}
-          </p>
-        </div>
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+          {String(s.id).padStart(2, "0")} · {s.categoria}
+        </p>
+        <p className="mt-0.5 font-semibold text-foreground">{s.titulo}</p>
       </button>
     </li>
   );
@@ -580,12 +590,22 @@ function EmptyState({
   body: string;
 }) {
   return (
-    <div className="grid place-items-center py-16 text-center">
-      <div className="grid h-14 w-14 place-items-center rounded-full border border-border bg-card text-muted-foreground">
+    <div className="flex flex-col items-center gap-3 py-16 text-center text-muted-foreground">
+      {icon}
+      <p className="font-semibold text-foreground">{title}</p>
+      <p className="text-sm">{body}</p>
+    </div>
+  );
+}
+
+function CoverStat({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
+  return (
+    <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
+      <div className="flex items-center gap-2 text-[#ffb4a5]">
         {icon}
+        <span className="text-[10px] font-semibold uppercase tracking-widest">{label}</span>
       </div>
-      <p className="mt-4 font-display text-base font-semibold">{title}</p>
-      <p className="mt-1 max-w-xs text-xs text-muted-foreground">{body}</p>
+      <p className="mt-2 text-2xl font-black text-white">{value}</p>
     </div>
   );
 }

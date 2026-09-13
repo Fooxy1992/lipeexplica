@@ -1,9 +1,11 @@
 import type { Product } from "@/core/domain/entities/product";
+import type { ProductPlan } from "@/core/domain/entities/product-plan";
 import type { Purchase } from "@/core/domain/entities/purchase";
 import type { Profile } from "@/core/domain/entities/profile";
 import type { ReadingProgress } from "@/core/domain/entities/reading-progress";
 import type {
   ProductRow,
+  ProductPlanRow,
   ProfileRow,
   PurchaseRow,
   ReadingProgressRow,
@@ -24,6 +26,24 @@ export function toProduct(row: ProductRow): Product {
     subscriptionPrice: row.subscription_price ?? null,
     active: row.active,
     createdAt: row.created_at,
+  };
+}
+
+export function toProductPlan(row: ProductPlanRow): ProductPlan {
+  return {
+    id: row.id,
+    productId: row.product_id,
+    slug: row.slug,
+    name: row.name,
+    description: row.description,
+    stripePriceId: row.stripe_price_id,
+    price: row.price,
+    currency: row.currency,
+    interval: row.billing_interval,
+    features: row.features ?? [],
+    highlight: row.highlight,
+    sortOrder: row.sort_order,
+    active: row.active,
   };
 }
 

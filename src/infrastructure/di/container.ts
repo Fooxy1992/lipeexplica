@@ -5,6 +5,7 @@ import {
   createSupabaseServerClient,
 } from "@/infrastructure/supabase/server";
 import { SupabaseProductRepository } from "@/infrastructure/repositories/supabase-product-repository";
+import { SupabaseProductPlanRepository } from "@/infrastructure/repositories/supabase-product-plan-repository";
 import { SupabasePurchaseRepository } from "@/infrastructure/repositories/supabase-purchase-repository";
 import { SupabaseProfileRepository } from "@/infrastructure/repositories/supabase-profile-repository";
 import { SupabaseProgressRepository } from "@/infrastructure/repositories/supabase-progress-repository";
@@ -17,7 +18,6 @@ import { StripePaymentGateway } from "@/infrastructure/stripe/stripe-payment-gat
 import { getStripe } from "@/infrastructure/stripe/stripe-client";
 import { N8nNotificationGateway } from "@/infrastructure/n8n/n8n-notification-gateway";
 import { ConsoleLogger } from "@/infrastructure/logging/console-logger";
-import { CreateCheckoutSession } from "@/core/application/use-cases/create-checkout-session";
 import { CreateSubscriptionCheckout } from "@/core/application/use-cases/create-subscription-checkout";
 import { HandleCheckoutCompleted } from "@/core/application/use-cases/handle-checkout-completed";
 import { HandleSubscriptionWebhook } from "@/core/application/use-cases/handle-subscription-webhook";
@@ -41,6 +41,7 @@ export const logger = new ConsoleLogger({ app: "lipeexplica" });
 function buildRepos(db: SupabaseClient) {
   return {
     products: new SupabaseProductRepository(db),
+    productPlans: new SupabaseProductPlanRepository(db),
     purchases: new SupabasePurchaseRepository(db),
     profiles: new SupabaseProfileRepository(db),
     progress: new SupabaseProgressRepository(db),
@@ -79,18 +80,12 @@ export async function userScopedContainer() {
       repos.profiles,
     ),
     trackAnalyticsEvent: new TrackAnalyticsEvent(repos.analytics),
-    // Lazy: only /api/checkout touches Stripe. Pages that never sell
+    // Lazy: only the checkout API touches Stripe. Pages that never sell
     // (landing, library, book) must not require Stripe secrets to render.
-    get createCheckoutSession() {
-      return new CreateCheckoutSession(
-        repos.products,
-        new StripePaymentGateway(getStripe()),
-        logger,
-      );
-    },
     get createSubscriptionCheckout() {
       return new CreateSubscriptionCheckout(
         repos.products,
+        repos.productPlans,
         new StripePaymentGateway(getStripe()),
         logger,
       );

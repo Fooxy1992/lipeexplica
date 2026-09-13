@@ -2,11 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { BuyButton } from "./buy-button";
-import type { Product } from "@/core/domain/entities/product";
-import { formatPrice } from "@/lib/utils";
 
-export function StickyCta({ product }: { product: Product }) {
+/**
+ * Sticky bottom bar on mobile. Two-tier plans means we can't pick one here,
+ * so it scrolls the visitor to the pricing section instead of starting a
+ * checkout for an unchosen plan.
+ */
+export function StickyCta() {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -14,8 +16,6 @@ export function StickyCta({ product }: { product: Product }) {
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
-
-  const price = formatPrice(product.price, product.currency.toUpperCase());
 
   return (
     <AnimatePresence>
@@ -29,14 +29,14 @@ export function StickyCta({ product }: { product: Product }) {
         >
           <div className="min-w-0">
             <p className="truncate text-[11px] font-bold text-white/50 uppercase tracking-wide">50 Dinâmicas BJJ</p>
-            <p className="text-base font-black text-white">{price}</p>
+            <p className="text-xs text-white/40">a partir de R$14,90/mês</p>
           </div>
-          <BuyButton
-            productId={product.id}
-            plan="book"
-            label="Comprar agora"
-            className="h-11 shrink-0 rounded-2xl bg-[#facc15] px-6 text-sm font-black uppercase tracking-wide text-[#09090b] shadow-[0_0_24px_rgba(250,204,21,0.4)] hover:brightness-110"
-          />
+          <a
+            href="#comprar"
+            className="inline-flex h-11 shrink-0 items-center rounded-2xl bg-[#facc15] px-6 text-sm font-black uppercase tracking-wide text-[#09090b] shadow-[0_0_24px_rgba(250,204,21,0.4)] hover:brightness-110"
+          >
+            Ver planos
+          </a>
         </motion.div>
       )}
     </AnimatePresence>

@@ -7,7 +7,10 @@ import { publicEnv } from '@/lib/env';
 
 export const runtime = 'nodejs';
 
-const bodySchema = z.object({ productId: z.string().uuid() });
+const bodySchema = z.object({
+  productId: z.string().uuid(),
+  planSlug: z.string().min(1).max(40),
+});
 const limiter = createRateLimiter({ maxRequests: 10, windowMs: 60_000 });
 
 export async function POST(request: Request) {
@@ -20,10 +23,9 @@ export async function POST(request: Request) {
     );
   }
 
-  let productId: string;
+  let body: { productId: string; planSlug: string };
   try {
-    const json = await request.json();
-    productId = bodySchema.parse(json).productId;
+    body = bodySchema.parse(await request.json());
   } catch {
     return NextResponse.json({ error: 'Payload inválido' }, { status: 422 });
   }
@@ -33,7 +35,8 @@ export async function POST(request: Request) {
     const { data: { user } } = await c.db.auth.getUser();
 
     const { url } = await c.createSubscriptionCheckout.execute({
-      productId,
+      productId: body.productId,
+      planSlug: body.planSlug,
       customerEmail: user?.email,
       siteUrl: publicEnv.NEXT_PUBLIC_SITE_URL,
     });

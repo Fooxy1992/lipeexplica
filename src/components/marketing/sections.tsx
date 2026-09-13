@@ -5,8 +5,8 @@ import {
   BookOpen,
   Check,
   Heart,
-  MessageCircle,
   ShieldCheck,
+  ShoppingBag,
   Star,
   Target,
   X,
@@ -22,6 +22,7 @@ import {
   Shield,
 } from "lucide-react";
 import type { Product } from "@/core/domain/entities/product";
+import type { ProductPlan } from "@/core/domain/entities/product-plan";
 import { formatPrice } from "@/lib/utils";
 import { BuyButton } from "./buy-button";
 import { DynamicPreview } from "./dynamic-preview";
@@ -36,26 +37,24 @@ const CARD = "#121314"; // surface 1
 
 /* ────────────────────────────────────────────────── HELPERS ── */
 
-function SectionCta({
-  product,
-  plan = "book",
-  label,
-}: {
-  product: Product;
-  plan?: "book" | "subscription";
-  label?: string;
-}) {
+/**
+ * Mid-page CTA. Now that there are two tiers, a button here cannot decide which
+ * one the visitor wants, so it scrolls to the pricing block instead of starting
+ * a checkout for a plan nobody chose.
+ */
+function SectionCta({ label }: { label?: string }) {
   return (
     <div className="mt-10 flex flex-col items-center gap-2">
-      <BuyButton
-        productId={product.id}
-        plan={plan}
-        label={label ?? "QUERO MEU ACESSO AGORA"}
-        // Cor vem da variante `gold` do <Button> (BuyButton já a usa). Classes
-        // Tailwind NUNCA podem ser montadas por template literal: a extração é
-        // estática, então `bg-[${GOLD}]` jamais gerava CSS.
-        className="px-10 text-base font-black uppercase tracking-wide"
-      />
+      <a
+        href="#comprar"
+        // Cor vem da variante `gold` do <Button>. Classes Tailwind NUNCA podem
+        // ser montadas por template literal: a extração é estática, então
+        // `bg-[${GOLD}]` jamais gerava CSS.
+        className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-[#facc15] px-10 text-base font-black uppercase tracking-wide text-[#09090b] transition hover:brightness-110"
+      >
+        <ShoppingBag className="h-4 w-4" />
+        {label ?? "VER OS PLANOS"}
+      </a>
       <p className="text-xs text-white/30">Acesso imediato · 7 dias de garantia</p>
     </div>
   );
@@ -83,12 +82,7 @@ function GoldGlow({ className }: { className?: string }) {
 
 /* ────────────────────────────────────────────────────── HERO ── */
 
-export function Hero({ product }: { product: Product }) {
-  const bookPrice = formatPrice(product.price, product.currency.toUpperCase());
-  const subPrice = product.subscriptionPrice
-    ? formatPrice(product.subscriptionPrice, product.currency.toUpperCase())
-    : null;
-
+export function Hero({ product, plans }: { product: Product; plans: ProductPlan[] }) {
   return (
     <section className="relative overflow-hidden px-6 pb-0 pt-16 sm:pt-24">
       <GlowBlob className="-top-40 left-1/2 h-[700px] w-[700px] -translate-x-1/2 opacity-20" />
@@ -122,10 +116,10 @@ export function Hero({ product }: { product: Product }) {
           {/* Trust list */}
           <div className="mt-6 flex flex-col gap-2">
             {[
-              "Acesso imediato após a compra",
+              "Acesso imediato após assinar",
               "Funciona em qualquer dispositivo",
-              "Atualizações de conteúdo mensais",
-              "Grupo exclusivo WhatsApp incluso",
+              "Dinâmicas novas todo mês no plano Completo",
+              "Cancele quando quiser, sem multa",
             ].map((t) => (
               <div key={t} className="flex items-center gap-2 text-sm text-white/70">
                 <Check className="h-4 w-4 shrink-0" style={{ color: RED }} />
@@ -136,25 +130,9 @@ export function Hero({ product }: { product: Product }) {
 
           {/* Pricing */}
           <div id="comprar" className="mt-8 max-w-sm space-y-3">
-            <PricingCard
-              productId={product.id}
-              plan="book"
-              price={bookPrice}
-              fromPrice="R$29,90"
-              title="Livro completo"
-              description="Acesso vitalício às 50 dinâmicas"
-              highlight={false}
-            />
-            {subPrice && (
-              <PricingCard
-                productId={product.id}
-                plan="subscription"
-                price={`${subPrice}/mês`}
-                title="Livro + Grupo WhatsApp"
-                description="Dinâmicas novas todo mês · cancele quando quiser"
-                highlight={true}
-              />
-            )}
+            {plans.map((p) => (
+              <PricingCard key={p.id} productId={product.id} plan={p} />
+            ))}
           </div>
           <p className="mt-3 text-xs text-white/25">
             Pagamento seguro via Stripe · 7 dias de garantia incondicional
@@ -346,7 +324,7 @@ export function CategoriesSection({ product }: { product: Product }) {
           ))}
         </div>
 
-        <SectionCta product={product} label="QUERO ACESSO A TODAS AS DINÂMICAS" />
+        <SectionCta label="VER OS PLANOS" />
       </div>
     </section>
   );
@@ -405,7 +383,7 @@ const OUTCOMES = [
   { icon: ShieldCheck, color: "#60a5fa",title: "Professor mais confiante",  body: "Chegar preparado muda sua postura. A turma sente, respeita e performa melhor." },
 ];
 
-export function Benefits({ product }: { product: Product }) {
+export function Benefits() {
   return (
     <section className="border-t border-white/6 px-6 py-20" style={{ background: CARD }}>
       <div className="mx-auto max-w-6xl">
@@ -414,9 +392,9 @@ export function Benefits({ product }: { product: Product }) {
             O que muda nas suas aulas
           </p>
           <h2 className="mt-3 font-display text-3xl font-black text-white sm:text-4xl">
-            Você não está comprando um livro.
+            Você não está assinando um app.
             <br />
-            <span style={{ color: RED }}>Está comprando resultados.</span>
+            <span style={{ color: RED }}>Está assinando resultados.</span>
           </h2>
         </div>
         <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -433,7 +411,7 @@ export function Benefits({ product }: { product: Product }) {
             </div>
           ))}
         </div>
-        <SectionCta product={product} />
+        <SectionCta />
       </div>
     </section>
   );
@@ -462,7 +440,7 @@ const TESTIMONIALS = [
   },
 ];
 
-export function Testimonials({ product }: { product: Product }) {
+export function Testimonials() {
   return (
     <section className="border-t border-white/6 px-6 py-20">
       <div className="mx-auto max-w-6xl">
@@ -505,7 +483,7 @@ export function Testimonials({ product }: { product: Product }) {
           ))}
         </div>
 
-        <SectionCta product={product} />
+        <SectionCta />
       </div>
     </section>
   );
@@ -594,12 +572,7 @@ export function GuaranteeSection() {
 
 /* ─────────────────────────────────────────── FINAL CTA ── */
 
-export function FinalCta({ product }: { product: Product }) {
-  const bookPrice = formatPrice(product.price, product.currency.toUpperCase());
-  const subPrice = product.subscriptionPrice
-    ? formatPrice(product.subscriptionPrice, product.currency.toUpperCase())
-    : null;
-
+export function FinalCta({ product, plans }: { product: Product; plans: ProductPlan[] }) {
   return (
     <section
       id="oferta"
@@ -625,25 +598,9 @@ export function FinalCta({ product }: { product: Product }) {
         </p>
 
         <div className="mx-auto mt-10 max-w-sm space-y-3 text-left">
-          <PricingCard
-            productId={product.id}
-            plan="book"
-            price={bookPrice}
-            fromPrice="R$29,90"
-            title="Livro completo"
-            description="Acesso vitalício às 50 dinâmicas"
-            highlight={false}
-          />
-          {subPrice && (
-            <PricingCard
-              productId={product.id}
-              plan="subscription"
-              price={`${subPrice}/mês`}
-              title="Livro + Grupo WhatsApp"
-              description="Dinâmicas novas todo mês · cancele quando quiser"
-              highlight={true}
-            />
-          )}
+          {plans.map((p) => (
+            <PricingCard key={p.id} productId={product.id} plan={p} />
+          ))}
         </div>
 
         <p className="mt-6 text-xs text-white/25">
@@ -656,33 +613,20 @@ export function FinalCta({ product }: { product: Product }) {
 
 /* ──────────────────────────────────────── PRICING CARD ── */
 
-function PricingCard({
-  productId,
-  plan,
-  price,
-  fromPrice,
-  title,
-  description,
-  highlight,
-}: {
-  productId: string;
-  plan: "book" | "subscription";
-  price: string;
-  fromPrice?: string;
-  title: string;
-  description: string;
-  highlight: boolean;
-}) {
+function PricingCard({ productId, plan }: { productId: string; plan: ProductPlan }) {
+  const displayPrice = formatPrice(plan.price, plan.currency.toUpperCase());
+  const priceLabel = `${displayPrice}/mês`;
+
   return (
     <div
       className="relative overflow-hidden rounded-2xl border p-5 text-left transition"
       style={
-        highlight
+        plan.highlight
           ? { borderColor: `${RED}60`, background: `linear-gradient(135deg, ${RED}0d, ${GOLD}08)` }
           : { borderColor: "rgba(255,255,255,0.08)", background: "rgba(255,255,255,0.03)" }
       }
     >
-      {highlight && (
+      {plan.highlight && (
         <span
           className="absolute right-4 top-4 rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-widest text-[#09090b]"
           style={{ background: GOLD }}
@@ -694,36 +638,44 @@ function PricingCard({
         <div
           className="mt-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-xl"
           style={
-            highlight
+            plan.highlight
               ? { background: `linear-gradient(135deg,${RED},#f87171)` }
               : { background: `${RED}18` }
           }
         >
-          {plan === "subscription" ? (
-            <MessageCircle className="h-4 w-4 text-white" />
+          {plan.highlight ? (
+            <Star className="h-4 w-4 text-white" />
           ) : (
             <BookOpen className="h-4 w-4" style={{ color: RED }} />
           )}
         </div>
         <div className="min-w-0 flex-1">
-          <p className="font-display font-semibold text-white">{title}</p>
-          <p className="mt-0.5 text-xs text-white/40">{description}</p>
+          <p className="font-display font-semibold text-white">{plan.name}</p>
+          {plan.description && (
+            <p className="mt-0.5 text-xs text-white/40">{plan.description}</p>
+          )}
         </div>
         <div className="shrink-0 text-right">
-          {fromPrice && <p className="text-xs text-white/25 line-through">{fromPrice}</p>}
-          <p className="font-display text-xl font-black text-white">{price}</p>
+          <p className="font-display text-xl font-black text-white">{priceLabel}</p>
+          <p className="text-[10px] text-white/30">por mês</p>
         </div>
       </div>
-      {plan === "subscription" && (
-        <div className="mt-3 flex items-center gap-1.5 text-xs text-white/50">
-          <Check className="h-3.5 w-3.5 shrink-0" style={{ color: RED }} />
-          Grupo WhatsApp com dinâmicas novas todo mês
-        </div>
+
+      {plan.features.length > 0 && (
+        <ul className="mt-3 space-y-1">
+          {plan.features.map((f) => (
+            <li key={f} className="flex items-center gap-1.5 text-xs text-white/50">
+              <Check className="h-3.5 w-3.5 shrink-0" style={{ color: RED }} />
+              {f}
+            </li>
+          ))}
+        </ul>
       )}
+
       <BuyButton
         productId={productId}
-        plan={plan}
-        label={plan === "subscription" ? `ASSINAR — ${price}` : `QUERO MEU ACESSO — ${price}`}
+        planSlug={plan.slug}
+        label={`ASSINAR ${plan.name.toUpperCase()} — ${priceLabel}`}
         className="mt-4 w-full"
       />
     </div>

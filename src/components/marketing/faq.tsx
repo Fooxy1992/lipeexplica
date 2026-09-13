@@ -19,20 +19,24 @@ const FAQS = [
     a: "Não. Tudo funciona no navegador do seu celular ou computador. Sem download, sem instalação, sem atualização manual.",
   },
   {
-    q: "Como recebo o acesso após a compra?",
-    a: "Assim que o pagamento é aprovado, você recebe um email e uma mensagem no WhatsApp com o link da biblioteca. O login é feito com o mesmo email da compra — via link mágico, Google ou Apple.",
+    q: "Como recebo o acesso após assinar?",
+    a: "Assim que o pagamento é aprovado, você recebe um email com o link da biblioteca. O login é feito com o mesmo email da assinatura — via link mágico, Google ou Apple.",
   },
   {
-    q: "É pagamento único ou assinatura?",
-    a: "O plano 'Livro completo' é pagamento único, acesso vitalício. O plano 'Livro + Grupo WhatsApp' inclui também o grupo de dinâmicas semanais — neste caso há uma mensalidade baixa para manter o grupo ativo.",
+    q: "Qual a diferença entre Essencial e Completo?",
+    a: "No Essencial você acessa as 50 dinâmicas completas da biblioteca atual, com busca, favoritos e progresso. No Completo tudo isso mais dinâmicas novas publicadas todo mês — a biblioteca cresce enquanto sua assinatura estiver ativa.",
   },
   {
-    q: "Por quanto tempo tenho acesso?",
-    a: "Acesso vitalício. Comprou uma vez, é seu para sempre, incluindo todas as atualizações de conteúdo que forem adicionadas.",
+    q: "Posso cancelar quando quiser?",
+    a: "Sim, sem multa e sem burocracia. Você cancela diretamente pelo portal de assinaturas (link no email da compra ou em lipeexplica.com/library > Conta). O acesso continua até o fim do período já pago.",
   },
   {
-    q: "Recebo atualizações de conteúdo?",
-    a: "Sim. Novas dinâmicas são adicionadas periodicamente. Quem adquiriu o livro recebe automaticamente. Quem tem o plano com Grupo WhatsApp recebe também as dinâmicas bônus enviadas diretamente no grupo.",
+    q: "Se eu cancelar, perco o acesso?",
+    a: "Sim, o acesso é ativo enquanto a assinatura estiver vigente. Se você voltar depois, a biblioteca estará lá — com tudo que foi publicado no intervalo.",
+  },
+  {
+    q: "Recebo dinâmicas novas todo mês no plano Essencial?",
+    a: "Não. O Essencial dá acesso permanente às 50 dinâmicas atuais, com correções e melhorias. Novos conteúdos mensais são exclusivos do plano Completo.",
   },
   {
     q: "Serve para Karatê, Judô ou Taekwondo?",
@@ -49,10 +53,6 @@ const FAQS = [
   {
     q: "E se eu não gostar?",
     a: "Você tem 7 dias de garantia incondicional, conforme o Código de Defesa do Consumidor (Art. 49). Basta responder o email da compra e devolvemos 100% do valor, sem perguntas.",
-  },
-  {
-    q: "Como acesso o grupo do WhatsApp?",
-    a: "Ao comprar o plano 'Livro + Grupo WhatsApp', o link de acesso ao grupo é enviado automaticamente junto com o acesso à biblioteca, dentro de minutos após a confirmação do pagamento.",
   },
 ];
 

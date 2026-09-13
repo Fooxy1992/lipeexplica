@@ -7,39 +7,40 @@ import { track } from "@/components/analytics/analytics-provider";
 
 interface BuyButtonProps {
   productId: string;
-  plan?: "book" | "subscription";
+  /** Which tier to subscribe to. The price is resolved server-side. */
+  planSlug: string;
   label?: string;
   className?: string;
 }
 
 /**
- * Starts Stripe Checkout. Sends only the productId — price is resolved
- * and validated server-side.
+ * Starts Stripe Checkout in subscription mode. Sends only the product and the
+ * plan slug — the amount is never trusted from the browser.
  */
-export function BuyButton({ productId, plan = "book", label = "Comprar agora", className }: BuyButtonProps) {
+export function BuyButton({
+  productId,
+  planSlug,
+  label = "Assinar agora",
+  className,
+}: BuyButtonProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   async function handleClick() {
     setLoading(true);
     setError(null);
-    track("checkout_started", { productId, plan });
-
-    // Recurring plans go through Stripe in subscription mode, which is a
-    // different Checkout Session — not a flag on the one-time one.
-    const endpoint =
-      plan === "subscription" ? "/api/checkout/subscription" : "/api/checkout";
+    track("checkout_started", { productId, plan: planSlug });
 
     try {
-      const res = await fetch(endpoint, {
+      const res = await fetch("/api/checkout/subscription", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ productId, plan }),
+        body: JSON.stringify({ productId, planSlug }),
       });
       const data = (await res.json()) as { url?: string; error?: string };
 
       if (!res.ok || !data.url) {
-        setError(data.error ?? "Não foi possível iniciar o checkout.");
+        setError(data.error ?? "Não foi possível iniciar a assinatura.");
         setLoading(false);
         return;
       }

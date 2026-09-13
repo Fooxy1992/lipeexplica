@@ -1,6 +1,7 @@
 import type { ComponentType } from "react";
 import type { InitialProgress } from "@/hooks/use-reading-progress";
 import { BookApp } from "./BookApp";
+import { MentalApp } from "./MentalApp";
 
 export interface BookReaderProps {
   productId: string;
@@ -16,6 +17,7 @@ export interface BookReaderProps {
  */
 const registry: Record<string, ComponentType<BookReaderProps>> = {
   "dinamicas-jiu-jitsu-infantil": BookApp,
+  "mental-do-tatame": MentalApp,
 };
 
 export function getBookReader(

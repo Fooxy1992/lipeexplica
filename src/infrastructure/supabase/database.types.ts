@@ -19,6 +19,23 @@ export interface ProductRow {
   updated_at: string;
 }
 
+export interface ProductPlanRow {
+  id: string;
+  product_id: string;
+  slug: string;
+  name: string;
+  description: string | null;
+  stripe_price_id: string;
+  price: number;
+  currency: string;
+  billing_interval: "month" | "year";
+  features: string[] | null;
+  highlight: boolean;
+  sort_order: number;
+  active: boolean;
+  created_at: string;
+}
+
 export interface PurchaseRow {
   id: string;
   user_id: string;

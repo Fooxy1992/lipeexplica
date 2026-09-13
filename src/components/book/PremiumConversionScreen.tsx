@@ -2,49 +2,30 @@
 
 import { useState } from 'react';
 import { motion } from 'motion/react';
-import { Sparkles, Zap, BookOpen, Loader2 } from 'lucide-react';
+import { Sparkles, Zap, Star, Loader2 } from 'lucide-react';
 
 interface Props {
-  productSlug: string;
   productId: string;
   onDismiss?: () => void;
 }
 
-type LoadingKey = 'sub' | 'book' | null;
+type LoadingKey = 'essencial' | 'completo' | null;
 
-export function PremiumConversionScreen({ productSlug, productId, onDismiss }: Props) {
+export function PremiumConversionScreen({ productId, onDismiss }: Props) {
   const [loading, setLoading] = useState<LoadingKey>(null);
   const [error, setError] = useState<string | null>(null);
 
-  async function handleSubscribe() {
-    setLoading('sub');
+  async function handleCheckout(planSlug: LoadingKey & string) {
+    setLoading(planSlug);
     setError(null);
     try {
       const res = await fetch('/api/checkout/subscription', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ productId }),
+        body: JSON.stringify({ productId, planSlug }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? 'Erro ao iniciar assinatura');
-      window.location.href = data.url;
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro inesperado');
-      setLoading(null);
-    }
-  }
-
-  async function handleBuy() {
-    setLoading('book');
-    setError(null);
-    try {
-      const res = await fetch('/api/checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ productId }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? 'Erro ao iniciar checkout');
       window.location.href = data.url;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro inesperado');
@@ -90,51 +71,67 @@ export function PremiumConversionScreen({ productSlug, productId, onDismiss }: P
           Preview concluído 🥋
         </p>
         <h2 className="mt-2 text-center font-display text-xl font-black leading-tight text-white">
-          Gostou? Escolha como continuar
+          Escolha seu plano para continuar
         </h2>
 
         {error && <p className="mt-3 text-center text-xs text-red-400">{error}</p>}
 
         <div className="mt-5 space-y-3">
-          {/* Assinatura */}
+          {/* Plano Completo — destacado */}
           <div className="rounded-2xl border border-[#FF4D2D]/30 bg-[#FF4D2D]/8 p-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Zap className="h-4 w-4 text-[#FF4D2D]" />
-                <span className="text-sm font-semibold text-white">Assinatura mensal</span>
+                <Star className="h-4 w-4 text-[#FF4D2D]" />
+                <span className="text-sm font-semibold text-white">Completo</span>
+                <span className="rounded-full bg-[#facc15] px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[#09090b]">
+                  Recomendado
+                </span>
               </div>
-              <span className="font-display text-lg font-black text-white">R$14,90<span className="text-xs font-normal text-white/50">/mês</span></span>
+              <span className="font-display text-lg font-black text-white">
+                R$24,90<span className="text-xs font-normal text-white/50">/mês</span>
+              </span>
             </div>
-            <p className="mt-1 text-xs text-white/50">50 dinâmicas + grupo WhatsApp · dinâmicas novas todo mês · cancele quando quiser</p>
+            <p className="mt-1 text-xs text-white/50">
+              50 dinâmicas + dinâmicas novas todo mês · cancele quando quiser
+            </p>
             <button
-              onClick={handleSubscribe}
+              onClick={() => handleCheckout('completo')}
               disabled={loading !== null}
               className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-bold text-white transition hover:brightness-110 disabled:opacity-60"
               style={{ background: 'linear-gradient(135deg, #FF4D2D, #ff7a5c)' }}
             >
-              {loading === 'sub' ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Assinar por R$14,90/mês'}
+              {loading === 'completo' ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                'Assinar Completo — R$24,90/mês'
+              )}
             </button>
           </div>
 
-          {/* Livro completo */}
+          {/* Plano Essencial */}
           <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <BookOpen className="h-4 w-4 text-white/70" />
-                <span className="text-sm font-semibold text-white">Livro completo</span>
+                <Zap className="h-4 w-4 text-white/70" />
+                <span className="text-sm font-semibold text-white">Essencial</span>
               </div>
-              <span className="font-display text-lg font-black text-white">R$14,90</span>
+              <span className="font-display text-lg font-black text-white">
+                R$14,90<span className="text-xs font-normal text-white/50">/mês</span>
+              </span>
             </div>
-            <p className="mt-1 text-xs text-white/50">Acesso vitalício às 50 dinâmicas</p>
+            <p className="mt-1 text-xs text-white/50">As 50 dinâmicas completas · cancele quando quiser</p>
             <button
-              onClick={handleBuy}
+              onClick={() => handleCheckout('essencial')}
               disabled={loading !== null}
               className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl border border-white/15 py-2.5 text-sm font-semibold text-white transition hover:bg-white/10 disabled:opacity-60"
             >
-              {loading === 'book' ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Comprar por R$14,90'}
+              {loading === 'essencial' ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                'Assinar Essencial — R$14,90/mês'
+              )}
             </button>
           </div>
-
         </div>
 
         {onDismiss && (
