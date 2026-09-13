@@ -7,7 +7,7 @@ import { track } from "@/components/analytics/analytics-provider";
 
 interface BuyButtonProps {
   productId: string;
-  plan?: "book" | "bundle";
+  plan?: "book" | "subscription";
   label?: string;
   className?: string;
 }
@@ -25,8 +25,13 @@ export function BuyButton({ productId, plan = "book", label = "Comprar agora", c
     setError(null);
     track("checkout_started", { productId, plan });
 
+    // Recurring plans go through Stripe in subscription mode, which is a
+    // different Checkout Session — not a flag on the one-time one.
+    const endpoint =
+      plan === "subscription" ? "/api/checkout/subscription" : "/api/checkout";
+
     try {
-      const res = await fetch("/api/checkout", {
+      const res = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ productId, plan }),

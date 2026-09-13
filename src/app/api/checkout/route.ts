@@ -12,7 +12,6 @@ export const runtime = "nodejs";
 
 const bodySchema = z.object({
   productId: z.string().uuid(),
-  plan: z.enum(["book", "bundle"]).default("book"),
 });
 
 // 10 checkout attempts / minute / IP
@@ -34,12 +33,9 @@ export async function POST(request: Request) {
   }
 
   let productId: string;
-  let plan: "book" | "bundle";
   try {
     const json = await request.json();
-    const parsed = bodySchema.parse(json);
-    productId = parsed.productId;
-    plan = parsed.plan;
+    productId = bodySchema.parse(json).productId;
   } catch {
     return NextResponse.json({ error: "Payload inválido" }, { status: 422 });
   }
@@ -54,7 +50,6 @@ export async function POST(request: Request) {
 
     const { url } = await c.createCheckoutSession.execute({
       productId,
-      plan,
       customerEmail: user?.email,
       siteUrl: publicEnv.NEXT_PUBLIC_SITE_URL,
     });

@@ -5,19 +5,46 @@ import { BookOpen, LogOut, ShoppingBag, TrendingUp, UserCog } from "lucide-react
 import { userScopedContainer } from "@/infrastructure/di/container";
 import { signOut } from "@/app/auth/actions";
 import { LibraryCard } from "@/components/library/library-card";
+import { AccountPanel } from "@/components/account/account-panel";
 
 export const metadata: Metadata = { title: "Minha Biblioteca" };
 export const dynamic = "force-dynamic";
 
-export default async function LibraryPage() {
+type Tab = "biblioteca" | "conta";
+
+const TABS: { key: Tab; label: string; href: string }[] = [
+  { key: "biblioteca", label: "Biblioteca", href: "/library" },
+  { key: "conta", label: "Conta", href: "/library?aba=conta" },
+];
+
+export default async function LibraryPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ aba?: string }>;
+}) {
   const c = await userScopedContainer();
   const {
     data: { user },
   } = await c.db.auth.getUser();
   if (!user) redirect("/login?next=/library");
 
+  const tab: Tab = (await searchParams).aba === "conta" ? "conta" : "biblioteca";
   const profile = await c.profiles.findById(user.id);
-  const items = await c.getUserLibrary.execute(user.id, profile?.isAdmin ?? false);
+
+  // Only the active tab is fetched: the account tab needs three queries the
+  // library has no use for, and the library scan is wasted on the account tab.
+  const items =
+    tab === "biblioteca"
+      ? await c.getUserLibrary.execute(user.id, profile?.isAdmin ?? false)
+      : [];
+  const account =
+    tab === "conta"
+      ? await Promise.all([
+          c.purchases.listByUser(user.id),
+          c.subscriptions.listByUser(user.id),
+          c.products.listAll(),
+        ])
+      : null;
 
   const firstName = profile?.name?.split(" ")[0] ?? null;
 
@@ -30,7 +57,7 @@ export default async function LibraryPage() {
     <div className="min-h-dvh bg-[#EEF2FA]">
       {/* ── Top bar ── */}
       <header className="sticky top-0 z-30 border-b border-[#E4EAF4] bg-white/90 backdrop-blur-md">
-        <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
+        <div className="mx-auto flex max-w-5xl items-center justify-between px-6 pt-4">
           <Link href="/" className="font-display text-base font-bold text-[#1C1E2E]">
             Lipe<span style={{ color: "#FF4D2D" }}>Explica</span>
           </Link>
@@ -43,12 +70,6 @@ export default async function LibraryPage() {
                 Admin
               </Link>
             ) : null}
-            <Link
-              href="/conta"
-              className="inline-flex items-center gap-2 rounded-full border border-[#E4EAF4] bg-white px-4 py-2 text-xs font-medium text-[#8B92A8] transition hover:border-[#FF4D2D]/40 hover:text-[#1C1E2E]"
-            >
-              <UserCog className="h-3.5 w-3.5" /> Conta
-            </Link>
             <form action={signOut}>
               <button
                 type="submit"
@@ -59,6 +80,27 @@ export default async function LibraryPage() {
             </form>
           </div>
         </div>
+
+        {/* ── Tabs ── */}
+        <nav className="mx-auto flex max-w-5xl gap-6 px-6" aria-label="Seções">
+          {TABS.map((t) => {
+            const active = t.key === tab;
+            return (
+              <Link
+                key={t.key}
+                href={t.href}
+                aria-current={active ? "page" : undefined}
+                className={`-mb-px border-b-2 py-3 text-sm font-semibold transition ${
+                  active
+                    ? "border-[#FF4D2D] text-[#1C1E2E]"
+                    : "border-transparent text-[#8B92A8] hover:text-[#1C1E2E]"
+                }`}
+              >
+                {t.label}
+              </Link>
+            );
+          })}
+        </nav>
       </header>
 
       <main className="mx-auto max-w-5xl px-6 py-8">
@@ -70,16 +112,18 @@ export default async function LibraryPage() {
                 {firstName ? `Olá, ${firstName} 🥋` : "Bem-vindo(a) 🥋"}
               </p>
               <h1 className="mt-1 font-display text-2xl font-bold text-[#1C1E2E] sm:text-3xl">
-                Minha Biblioteca
+                {tab === "conta" ? "Minha Conta" : "Minha Biblioteca"}
               </h1>
               <p className="mt-1 text-sm text-[#8B92A8]">
-                {items.length === 0
-                  ? "Comece sua jornada no jiu-jitsu."
-                  : `${items.length} ${items.length === 1 ? "título" : "títulos"} na sua coleção`}
+                {tab === "conta"
+                  ? "Seus dados, sua senha e suas compras."
+                  : items.length === 0
+                    ? "Comece sua jornada no jiu-jitsu."
+                    : `${items.length} ${items.length === 1 ? "título" : "títulos"} na sua coleção`}
               </p>
-              {!profile?.name ? (
+              {!profile?.name && tab !== "conta" ? (
                 <Link
-                  href="/conta"
+                  href="/library?aba=conta"
                   className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-[#FF4D2D] underline-offset-4 hover:underline"
                 >
                   <UserCog className="h-3.5 w-3.5" /> Complete seu perfil
@@ -87,7 +131,7 @@ export default async function LibraryPage() {
               ) : null}
             </div>
 
-            {items.length > 0 && (
+            {tab === "biblioteca" && items.length > 0 && (
               <div className="flex shrink-0 items-center gap-3 rounded-2xl bg-[#EEF2FA] px-5 py-4 sm:flex-col sm:items-end sm:gap-1">
                 <div className="flex items-center gap-2 text-[#8B92A8]">
                   <TrendingUp className="h-4 w-4 text-[#FF4D2D]" />
@@ -103,7 +147,7 @@ export default async function LibraryPage() {
             )}
           </div>
 
-          {items.length > 0 && (
+          {tab === "biblioteca" && items.length > 0 && (
             <div className="h-1.5 overflow-hidden bg-[#EEF2FA]">
               <div
                 className="h-full transition-all duration-700"
@@ -116,8 +160,17 @@ export default async function LibraryPage() {
           )}
         </div>
 
-        {/* ── Book grid or empty state ── */}
-        {items.length === 0 ? (
+        {account ? (
+          <div className="mt-6">
+            <AccountPanel
+              user={user}
+              profile={profile}
+              purchases={account[0]}
+              subscriptions={account[1]}
+              products={account[2]}
+            />
+          </div>
+        ) : items.length === 0 ? (
           <div className="mt-8 grid place-items-center rounded-2xl border border-dashed border-[#E4EAF4] bg-white py-20 text-center">
             <div className="grid h-14 w-14 place-items-center rounded-2xl bg-[#EEF2FA]">
               <BookOpen className="h-6 w-6 text-[#8B92A8]" />

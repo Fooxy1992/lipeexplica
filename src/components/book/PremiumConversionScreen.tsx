@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { motion } from 'motion/react';
-import { Sparkles, Zap, MessageCircle, BookOpen, Loader2 } from 'lucide-react';
+import { Sparkles, Zap, BookOpen, Loader2 } from 'lucide-react';
 
 interface Props {
   productSlug: string;
@@ -10,7 +10,7 @@ interface Props {
   onDismiss?: () => void;
 }
 
-type LoadingKey = 'sub' | 'book' | 'bundle' | null;
+type LoadingKey = 'sub' | 'book' | null;
 
 export function PremiumConversionScreen({ productSlug, productId, onDismiss }: Props) {
   const [loading, setLoading] = useState<LoadingKey>(null);
@@ -34,14 +34,14 @@ export function PremiumConversionScreen({ productSlug, productId, onDismiss }: P
     }
   }
 
-  async function handleBuy(plan: 'book' | 'bundle') {
-    setLoading(plan);
+  async function handleBuy() {
+    setLoading('book');
     setError(null);
     try {
       const res = await fetch('/api/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ productId, plan }),
+        body: JSON.stringify({ productId }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? 'Erro ao iniciar checkout');
@@ -105,7 +105,7 @@ export function PremiumConversionScreen({ productSlug, productId, onDismiss }: P
               </div>
               <span className="font-display text-lg font-black text-white">R$14,90<span className="text-xs font-normal text-white/50">/mês</span></span>
             </div>
-            <p className="mt-1 text-xs text-white/50">50 dinâmicas · cancele quando quiser</p>
+            <p className="mt-1 text-xs text-white/50">50 dinâmicas + grupo WhatsApp · dinâmicas novas todo mês · cancele quando quiser</p>
             <button
               onClick={handleSubscribe}
               disabled={loading !== null}
@@ -127,7 +127,7 @@ export function PremiumConversionScreen({ productSlug, productId, onDismiss }: P
             </div>
             <p className="mt-1 text-xs text-white/50">Acesso vitalício às 50 dinâmicas</p>
             <button
-              onClick={() => handleBuy('book')}
+              onClick={handleBuy}
               disabled={loading !== null}
               className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl border border-white/15 py-2.5 text-sm font-semibold text-white transition hover:bg-white/10 disabled:opacity-60"
             >
@@ -135,27 +135,6 @@ export function PremiumConversionScreen({ productSlug, productId, onDismiss }: P
             </button>
           </div>
 
-          {/* Bundle */}
-          <div className="relative rounded-2xl border border-[#ffbc7c]/40 bg-[#ffbc7c]/5 p-4">
-            <span className="absolute -top-2.5 left-4 rounded-full bg-[#ffbc7c] px-2.5 py-0.5 text-[10px] font-bold text-black">
-              MELHOR VALOR
-            </span>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <MessageCircle className="h-4 w-4 text-[#ffbc7c]" />
-                <span className="text-sm font-semibold text-white">Livro + WhatsApp</span>
-              </div>
-              <span className="font-display text-lg font-black text-white">R$19,90</span>
-            </div>
-            <p className="mt-1 text-xs text-white/50">Livro vitalício + dinâmicas novas toda semana</p>
-            <button
-              onClick={() => handleBuy('bundle')}
-              disabled={loading !== null}
-              className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl border border-[#ffbc7c]/30 py-2.5 text-sm font-semibold text-[#ffbc7c] transition hover:bg-[#ffbc7c]/10 disabled:opacity-60"
-            >
-              {loading === 'bundle' ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Comprar por R$19,90'}
-            </button>
-          </div>
         </div>
 
         {onDismiss && (

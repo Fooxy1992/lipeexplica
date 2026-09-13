@@ -54,7 +54,6 @@ export async function updateProfile(
     return { ok: false, message: "Não foi possível salvar. Tente novamente." };
   }
 
-  revalidatePath("/conta");
   revalidatePath("/library");
   return { ok: true, message: "Dados atualizados." };
 }

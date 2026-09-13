@@ -42,7 +42,7 @@ function SectionCta({
   label,
 }: {
   product: Product;
-  plan?: "book" | "bundle";
+  plan?: "book" | "subscription";
   label?: string;
 }) {
   return (
@@ -85,8 +85,8 @@ function GoldGlow({ className }: { className?: string }) {
 
 export function Hero({ product }: { product: Product }) {
   const bookPrice = formatPrice(product.price, product.currency.toUpperCase());
-  const bundlePrice = product.bundlePrice
-    ? formatPrice(product.bundlePrice, product.currency.toUpperCase())
+  const subPrice = product.subscriptionPrice
+    ? formatPrice(product.subscriptionPrice, product.currency.toUpperCase())
     : null;
 
   return (
@@ -124,7 +124,7 @@ export function Hero({ product }: { product: Product }) {
             {[
               "Acesso imediato após a compra",
               "Funciona em qualquer dispositivo",
-              "Atualizações de conteúdo semanais",
+              "Atualizações de conteúdo mensais",
               "Grupo exclusivo WhatsApp incluso",
             ].map((t) => (
               <div key={t} className="flex items-center gap-2 text-sm text-white/70">
@@ -145,14 +145,13 @@ export function Hero({ product }: { product: Product }) {
               description="Acesso vitalício às 50 dinâmicas"
               highlight={false}
             />
-            {bundlePrice && (
+            {subPrice && (
               <PricingCard
                 productId={product.id}
-                plan="bundle"
-                price={bundlePrice}
-                fromPrice="R$39,90"
+                plan="subscription"
+                price={`${subPrice}/mês`}
                 title="Livro + Grupo WhatsApp"
-                description="Livro completo + dinâmicas novas toda semana"
+                description="Dinâmicas novas todo mês · cancele quando quiser"
                 highlight={true}
               />
             )}
@@ -597,8 +596,8 @@ export function GuaranteeSection() {
 
 export function FinalCta({ product }: { product: Product }) {
   const bookPrice = formatPrice(product.price, product.currency.toUpperCase());
-  const bundlePrice = product.bundlePrice
-    ? formatPrice(product.bundlePrice, product.currency.toUpperCase())
+  const subPrice = product.subscriptionPrice
+    ? formatPrice(product.subscriptionPrice, product.currency.toUpperCase())
     : null;
 
   return (
@@ -635,14 +634,13 @@ export function FinalCta({ product }: { product: Product }) {
             description="Acesso vitalício às 50 dinâmicas"
             highlight={false}
           />
-          {bundlePrice && (
+          {subPrice && (
             <PricingCard
               productId={product.id}
-              plan="bundle"
-              price={bundlePrice}
-              fromPrice="R$39,90"
+              plan="subscription"
+              price={`${subPrice}/mês`}
               title="Livro + Grupo WhatsApp"
-              description="Livro completo + dinâmicas novas toda semana"
+              description="Dinâmicas novas todo mês · cancele quando quiser"
               highlight={true}
             />
           )}
@@ -668,7 +666,7 @@ function PricingCard({
   highlight,
 }: {
   productId: string;
-  plan: "book" | "bundle";
+  plan: "book" | "subscription";
   price: string;
   fromPrice?: string;
   title: string;
@@ -701,7 +699,7 @@ function PricingCard({
               : { background: `${RED}18` }
           }
         >
-          {plan === "bundle" ? (
+          {plan === "subscription" ? (
             <MessageCircle className="h-4 w-4 text-white" />
           ) : (
             <BookOpen className="h-4 w-4" style={{ color: RED }} />
@@ -716,16 +714,16 @@ function PricingCard({
           <p className="font-display text-xl font-black text-white">{price}</p>
         </div>
       </div>
-      {plan === "bundle" && (
+      {plan === "subscription" && (
         <div className="mt-3 flex items-center gap-1.5 text-xs text-white/50">
           <Check className="h-3.5 w-3.5 shrink-0" style={{ color: RED }} />
-          Acesso ao grupo WhatsApp com dinâmicas novas toda semana
+          Grupo WhatsApp com dinâmicas novas todo mês
         </div>
       )}
       <BuyButton
         productId={productId}
         plan={plan}
-        label={`QUERO MEU ACESSO — ${price}`}
+        label={plan === "subscription" ? `ASSINAR — ${price}` : `QUERO MEU ACESSO — ${price}`}
         className="mt-4 w-full"
       />
     </div>

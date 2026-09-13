@@ -21,7 +21,7 @@ export async function POST(request: Request) {
     const adm = adminContainer();
     const { url } = await adm.payments.createCustomerPortal({
       stripeCustomerId: active.stripeCustomerId,
-      returnUrl: `${publicEnv.NEXT_PUBLIC_SITE_URL}/library`,
+      returnUrl: `${publicEnv.NEXT_PUBLIC_SITE_URL}/library?aba=conta`,
     });
 
     return NextResponse.json({ url });

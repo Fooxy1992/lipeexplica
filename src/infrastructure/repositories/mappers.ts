@@ -21,8 +21,7 @@ export function toProduct(row: ProductRow): Product {
     currency: row.currency,
     stripePriceId: row.stripe_price_id,
     subscriptionStripePriceId: row.subscription_stripe_price_id,
-    bundleStripePriceId: row.stripe_bundle_price_id ?? null,
-    bundlePrice: row.bundle_price ?? null,
+    subscriptionPrice: row.subscription_price ?? null,
     active: row.active,
     createdAt: row.created_at,
   };

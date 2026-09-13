@@ -5,8 +5,6 @@ import type { Logger } from "@/core/application/ports/logger";
 
 export interface CreateCheckoutSessionInput {
   productId: string;
-  /** 'book' = livro só; 'bundle' = livro + grupo WhatsApp */
-  plan?: 'book' | 'bundle';
   /** Email of the logged-in user, if any (prefills Stripe Checkout). */
   customerEmail?: string;
   siteUrl: string;
@@ -31,8 +29,7 @@ export class CreateCheckoutSession {
     if (!product) throw new DomainError("NOT_FOUND", "Produto não encontrado");
     if (!product.active)
       throw new DomainError("FORBIDDEN", "Produto indisponível");
-    const isBundle = input.plan === 'bundle';
-    const priceId = isBundle ? product.bundleStripePriceId : product.stripePriceId;
+    const priceId = product.stripePriceId;
     if (!priceId)
       throw new DomainError("PAYMENT", "Produto sem preço configurado");
 

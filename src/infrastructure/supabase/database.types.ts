@@ -13,8 +13,7 @@ export interface ProductRow {
   currency: string;
   stripe_price_id: string | null;
   subscription_stripe_price_id: string | null;
-  stripe_bundle_price_id: string | null;
-  bundle_price: number | null;
+  subscription_price: number | null;
   active: boolean;
   created_at: string;
   updated_at: string;
