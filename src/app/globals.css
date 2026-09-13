@@ -74,6 +74,12 @@
 
   /* Escala única para todo o site público. Os displays usam clamp para
    * escalar sem breakpoint e sem estourar em 320px. */
+  /* hero-display: título principal da Home — máximo impacto */
+  --text-hero: clamp(3.25rem, 10.5vw, 7rem);
+  --text-hero--line-height: 0.9;
+  --text-hero--letter-spacing: -0.04em;
+  --text-hero--font-weight: 900;
+
   --text-display: clamp(2.5rem, 7.5vw, 4.25rem);
   --text-display--line-height: 0.98;
   --text-display--letter-spacing: -0.04em;

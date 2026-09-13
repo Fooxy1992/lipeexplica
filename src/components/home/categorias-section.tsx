@@ -11,10 +11,10 @@ export function CategoriasSection() {
     >
       <SectionHeader
         id="home-categorias"
-        eyebrow="Explore"
+        eyebrow="Explore o conteúdo"
         title="O que você quer aprender?"
-        description="Seis frentes do Jiu-Jitsu. Escolha a sua e vá fundo."
-        action={{ href: "/aprender", label: "Ver tudo" }}
+        description="Escolha um assunto e mergulhe no universo do Jiu-Jitsu."
+        action={{ href: "/aprender", label: "Ver todas as categorias" }}
       />
 
       <ul className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
