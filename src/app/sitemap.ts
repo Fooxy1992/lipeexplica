@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { posts } from "@/data/blog";
 import { termos } from "@/data/glossario";
+import { categorias } from "@/data/categorias";
 
 const BASE = "https://www.lipeexplica.com";
 
@@ -9,6 +10,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   const statics: MetadataRoute.Sitemap = [
     { url: BASE, lastModified: now, changeFrequency: "weekly", priority: 1.0 },
+    { url: `${BASE}/aprender`, lastModified: now, changeFrequency: "weekly", priority: 0.9 },
     { url: `${BASE}/50dinamicas`, lastModified: now, changeFrequency: "monthly", priority: 0.9 },
     { url: `${BASE}/blog`, lastModified: now, changeFrequency: "weekly", priority: 0.8 },
     { url: `${BASE}/glossario`, lastModified: now, changeFrequency: "monthly", priority: 0.7 },
@@ -16,6 +18,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${BASE}/sobre`, lastModified: now, changeFrequency: "yearly", priority: 0.5 },
     { url: `${BASE}/contato`, lastModified: now, changeFrequency: "yearly", priority: 0.4 },
   ];
+
+  const categoriaEntries: MetadataRoute.Sitemap = categorias.map((c) => ({
+    url: `${BASE}/aprender/${c.slug}`,
+    lastModified: now,
+    changeFrequency: "weekly",
+    priority: 0.8,
+  }));
 
   const blogEntries: MetadataRoute.Sitemap = posts.map((p) => ({
     url: `${BASE}/blog/${p.slug}`,
@@ -31,5 +40,5 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.5,
   }));
 
-  return [...statics, ...blogEntries, ...glossarioEntries];
+  return [...statics, ...categoriaEntries, ...blogEntries, ...glossarioEntries];
 }

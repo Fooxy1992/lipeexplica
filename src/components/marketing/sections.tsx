@@ -30,10 +30,9 @@ import { Faq } from "./faq";
 
 /* ─────────────────────────────────────────── PALETTE CONSTANTS ── */
 
-const RED = "#ef4444";
+const RED = "#ff4b2b"; // vermelho oficial da marca
 const GOLD = "#facc15";
-const DARK = "#09090b";
-const CARD = "#111827";
+const CARD = "#121314"; // surface 1
 
 /* ────────────────────────────────────────────────── HELPERS ── */
 
@@ -52,7 +51,10 @@ function SectionCta({
         productId={product.id}
         plan={plan}
         label={label ?? "QUERO MEU ACESSO AGORA"}
-        className={`h-14 px-10 text-base font-black uppercase tracking-wide bg-[${GOLD}] text-[${DARK}] shadow-[0_0_40px_rgba(250,204,21,0.3)] hover:brightness-110`}
+        // Cor vem da variante `gold` do <Button> (BuyButton já a usa). Classes
+        // Tailwind NUNCA podem ser montadas por template literal: a extração é
+        // estática, então `bg-[${GOLD}]` jamais gerava CSS.
+        className="px-10 text-base font-black uppercase tracking-wide"
       />
       <p className="text-xs text-white/30">Acesso imediato · 7 dias de garantia</p>
     </div>
@@ -64,7 +66,7 @@ function GlowBlob({ className }: { className?: string }) {
     <div
       aria-hidden
       className={`pointer-events-none absolute rounded-full blur-3xl ${className}`}
-      style={{ background: `radial-gradient(circle, rgba(239,68,68,0.18), transparent 70%)` }}
+      style={{ background: `radial-gradient(circle, rgba(255,75,43,0.18), transparent 70%)` }}
     />
   );
 }

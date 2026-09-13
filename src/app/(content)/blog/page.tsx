@@ -1,64 +1,96 @@
 import type { Metadata } from "next";
-import Image from "next/image";
-import Link from "next/link";
-import { Clock } from "lucide-react";
 import { posts } from "@/data/blog";
 import { PageHeader } from "@/components/content/page-header";
-import { formatDate } from "@/lib/utils";
+import { PostCard } from "@/components/content/post-card";
+import { Tag } from "@/components/ui/tag";
+import { EmptyState } from "@/components/ui/empty-state";
+import { FileText } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Blog",
+  title: "Conteúdos",
   description:
     "Artigos sobre Jiu-Jitsu: técnicas, mentalidade, evolução e tudo sobre a arte suave.",
+  alternates: { canonical: "/blog" },
 };
 
-export default function BlogPage() {
+const CATEGORIAS = ["Faixas", "Mentalidade", "Curiosidades", "Infantil"] as const;
+
+/** O filtro vive na URL (?categoria=) — continua funcionando sem JS. */
+export default async function BlogPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ categoria?: string }>;
+}) {
+  const { categoria } = await searchParams;
+
+  const ativa = CATEGORIAS.find(
+    (c) => c.toLowerCase() === categoria?.toLowerCase(),
+  );
+
+  const lista = [...posts]
+    .filter((p) => (ativa ? p.category === ativa : true))
+    .sort((a, b) => b.date.localeCompare(a.date));
+
   return (
     <>
       <PageHeader
-        eyebrow="Blog"
+        eyebrow="Conteúdos"
         title="Artigos sobre Jiu-Jitsu"
         subtitle="Técnicas, mentalidade, evolução e tudo sobre a arte suave."
+        breadcrumb={[
+          { href: "/", label: "Home" },
+          { label: "Conteúdos" },
+        ]}
       />
-      <section className="mx-auto max-w-4xl px-6 py-14">
-        <div className="space-y-5">
-          {posts.map((post) => (
-            <Link
-              key={post.slug}
-              href={`/blog/${post.slug}`}
-              className="group block rounded-2xl border border-border bg-card transition hover:border-[var(--royal)]/50 hover:shadow-md overflow-hidden"
-            >
-              {post.image ? (
-                <div className="overflow-hidden">
-                  <Image
-                    src={post.image}
-                    alt={post.title}
-                    width={800}
-                    height={450}
-                    className="w-full object-cover transition group-hover:scale-[1.02]"
-                  />
-                </div>
-              ) : null}
-              <div className="p-6 sm:p-8">
-                <div className="flex flex-wrap items-center gap-3 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
-                  <span className="rounded-full bg-[color-mix(in_oklab,var(--royal)_12%,transparent)] px-2.5 py-1 text-[var(--royal)]">
-                    {post.category}
-                  </span>
-                  <span className="inline-flex items-center gap-1">
-                    <Clock className="h-3 w-3" /> {post.readingTime}
-                  </span>
-                  <span>{formatDate(post.date).split(",")[0]}</span>
-                </div>
-                <h2 className="mt-3 font-display text-2xl font-semibold leading-snug group-hover:text-[var(--royal)]">
-                  {post.title}
-                </h2>
-                <p className="mt-2 leading-relaxed text-muted-foreground">
-                  {post.description}
-                </p>
-              </div>
-            </Link>
-          ))}
-        </div>
+
+      <section className="mx-auto max-w-6xl px-4 py-14 sm:px-6 lg:px-8">
+        <nav aria-label="Filtrar por categoria">
+          <ul className="flex flex-wrap gap-2">
+            <li>
+              <Tag href="/blog" isActive={!ativa} count={posts.length}>
+                Todos
+              </Tag>
+            </li>
+            {CATEGORIAS.map((c) => {
+              const total = posts.filter((p) => p.category === c).length;
+              if (total === 0) return null;
+              return (
+                <li key={c}>
+                  <Tag
+                    href={`/blog?categoria=${c.toLowerCase()}`}
+                    isActive={ativa === c}
+                    count={total}
+                  >
+                    {c}
+                  </Tag>
+                </li>
+              );
+            })}
+          </ul>
+        </nav>
+
+        <p role="status" aria-live="polite" className="mt-6 text-small text-muted-foreground">
+          {lista.length} {lista.length === 1 ? "artigo" : "artigos"}
+          {ativa ? ` em ${ativa}` : ""}
+        </p>
+
+        {lista.length === 0 ? (
+          <EmptyState
+            className="mt-8"
+            icon={FileText}
+            title="Nenhum artigo nesta categoria"
+            description="Ainda não publicamos nada aqui."
+            actions={[{ href: "/blog", label: "Ver todos os artigos", primary: true }]}
+          />
+        ) : (
+          <ul className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {lista.map((post) => (
+              <li key={post.slug} className="flex">
+                <PostCard post={post} className="w-full" />
+              </li>
+            ))}
+          </ul>
+        )}
       </section>
     </>
   );

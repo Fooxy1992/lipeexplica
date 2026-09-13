@@ -1,74 +1,71 @@
 import Link from "next/link";
 import Image from "next/image";
-import { BookOpen, Library } from "lucide-react";
+import { Library, Search } from "lucide-react";
+import { InstagramIcon } from "@/components/ui/instagram-icon";
 import { INSTAGRAM_URL } from "@/data/reels";
+import { NavDesktop } from "./nav-desktop";
+import { NavMobile } from "./nav-mobile";
+import { SearchShortcut } from "./search-shortcut";
 
-const NAV_LINKS = [
-  { href: "/", label: "Home" },
-  { href: "/videos", label: "Vídeos" },
-  { href: "/blog", label: "Blog" },
-  { href: "/glossario", label: "Glossário" },
-  { href: "/sobre", label: "Sobre" },
-  { href: "/contato", label: "Contato" },
-];
-
-/** Navegação global — visual original do site (dark + brand-red). */
+/** Navegação global do site público. */
 export function Navbar({ isLoggedIn }: { isLoggedIn: boolean }) {
   return (
-    <header className="glass sticky top-0 z-40">
-      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        <Link href="/" className="group flex items-center gap-2.5">
-          <span className="relative h-9 w-9 overflow-hidden rounded-full ring-2 ring-[#FF4D2D]/30 transition group-hover:ring-[#FF4D2D]/60">
-            <Image src="/logotipo.png" alt="lipeexplica" fill className="object-cover" />
+    <header className="glass sticky top-0 z-40 border-b border-border">
+      <div className="mx-auto flex h-16 max-w-6xl items-center gap-4 px-4 sm:px-6 lg:px-8">
+        <Link
+          href="/"
+          className="group flex shrink-0 items-center gap-2.5"
+          aria-label="LipeExplica — página inicial"
+        >
+          <span className="relative h-9 w-9 shrink-0 overflow-hidden rounded-full ring-2 ring-[color-mix(in_oklab,var(--brand)_30%,transparent)] transition-[box-shadow] group-hover:ring-[color-mix(in_oklab,var(--brand)_60%,transparent)]">
+            <Image
+              src="/logotipo.webp"
+              alt=""
+              fill
+              sizes="36px"
+              className="object-cover"
+            />
           </span>
-          <span className="text-xl font-black tracking-tight">
-            <span className="text-[#fafafa]">lipe</span>
-            <span className="text-[#FF4D2D]">explica</span>
+          <span className="text-xl font-black tracking-[-0.02em]">
+            <span className="text-foreground">lipe</span>
+            <span className="text-[var(--brand)]">explica</span>
           </span>
         </Link>
 
-        <nav className="hidden items-center gap-1 lg:flex">
-          {NAV_LINKS.map((l) => (
-            <Link
-              key={l.href}
-              href={l.href}
-              className="rounded-lg px-3.5 py-2 text-sm font-medium text-[#a1a1aa] transition hover:bg-white/5 hover:text-[#fafafa]"
-            >
-              {l.label}
-            </Link>
-          ))}
-        </nav>
+        <div className="ml-auto flex items-center gap-2">
+          <NavDesktop />
 
-        <div className="flex items-center gap-2.5">
           <Link
-            href="/50dinamicas"
-            className="hidden items-center gap-1.5 rounded-full border border-[#FF4D2D]/40 bg-[#FF4D2D]/10 px-4 py-2 text-xs font-semibold uppercase tracking-wider text-[#ffb4a5] transition hover:bg-[#FF4D2D]/20 sm:inline-flex"
+            href="/buscar"
+            className="inline-flex h-11 w-11 items-center justify-center rounded-xl text-muted-foreground transition-colors hover:bg-[color-mix(in_oklab,var(--foreground)_6%,transparent)] hover:text-foreground"
           >
-            <BookOpen className="h-3.5 w-3.5" />
-            50 Dinâmicas
+            <Search className="h-5 w-5" aria-hidden />
+            <span className="sr-only">Buscar (atalho: Ctrl ou Cmd + K)</span>
           </Link>
+
+          <a
+            href={INSTAGRAM_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hidden h-11 w-11 items-center justify-center rounded-xl text-muted-foreground transition-colors hover:bg-[color-mix(in_oklab,var(--foreground)_6%,transparent)] hover:text-foreground lg:inline-flex"
+          >
+            <InstagramIcon />
+            <span className="sr-only">Instagram (abre em nova aba)</span>
+          </a>
+
           <Link
             href={isLoggedIn ? "/library" : "/login"}
-            className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold uppercase tracking-wider text-[#e4e4e7] transition hover:bg-white/10"
+            className="hidden min-h-11 items-center gap-1.5 rounded-full border border-border bg-[color-mix(in_oklab,var(--foreground)_5%,transparent)] px-4 text-small font-semibold text-foreground transition-colors hover:bg-[color-mix(in_oklab,var(--foreground)_10%,transparent)] sm:inline-flex"
           >
-            <Library className="h-3.5 w-3.5" />
+            <Library className="h-4 w-4" aria-hidden />
             {isLoggedIn ? "Biblioteca" : "Entrar"}
           </Link>
+
+          <NavMobile isLoggedIn={isLoggedIn} />
         </div>
       </div>
 
-      {/* nav mobile */}
-      <nav className="flex gap-1 overflow-x-auto px-4 pb-3 lg:hidden">
-        {[...NAV_LINKS, { href: "/50dinamicas", label: "📕 50 Dinâmicas" }].map((l) => (
-          <Link
-            key={l.href}
-            href={l.href}
-            className="shrink-0 rounded-full border border-white/10 px-3.5 py-1.5 text-xs text-[#a1a1aa] transition hover:text-[#fafafa]"
-          >
-            {l.label}
-          </Link>
-        ))}
-      </nav>
+      <SearchShortcut />
     </header>
   );
 }

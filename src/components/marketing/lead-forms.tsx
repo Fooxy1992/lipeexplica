@@ -1,13 +1,20 @@
 "use client";
 
 import { useState } from "react";
-import { Loader2, Send } from "lucide-react";
+import { Loader2, Send, CheckCircle2 } from "lucide-react";
+import { Input, Select, Textarea } from "@/components/ui/input";
 
-/** Formulário de newsletter (home) — captura lead com nome + email. */
+type FormState = "idle" | "loading" | "ok" | "error";
+
+/**
+ * Newsletter.
+ *
+ * Só pede email: `name` é opcional no schema de /api/leads, então removê-lo
+ * do formulário não altera o contrato da API — reduz o atrito de conversão.
+ */
 export function NewsletterForm() {
-  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [state, setState] = useState<"idle" | "loading" | "ok" | "error">("idle");
+  const [state, setState] = useState<FormState>("idle");
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -16,7 +23,7 @@ export function NewsletterForm() {
       const res = await fetch("/api/leads", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, source: "newsletter" }),
+        body: JSON.stringify({ email, source: "newsletter" }),
       });
       setState(res.ok ? "ok" : "error");
     } catch {
@@ -26,57 +33,66 @@ export function NewsletterForm() {
 
   if (state === "ok") {
     return (
-      <p className="mt-6 text-sm font-semibold text-emerald-400">
-        Inscrito{name ? `, ${name.split(" ")[0]}` : ""}! Você vai receber os
-        próximos conteúdos. OSS 🥋
+      <p
+        role="status"
+        aria-live="polite"
+        className="mx-auto mt-8 flex max-w-md items-center justify-center gap-2 rounded-xl border border-border bg-[var(--surface-2)] px-5 py-4 text-body font-semibold text-foreground"
+      >
+        <CheckCircle2 className="h-5 w-5 shrink-0 text-[var(--brand)]" aria-hidden />
+        Inscrito! Os próximos conteúdos chegam no seu email. OSS 🥋
       </p>
     );
   }
 
-  const inputCls =
-    "w-full rounded-full border border-white/10 bg-white/5 px-5 py-3 text-sm text-[#fafafa] placeholder:text-[#52525b] outline-none transition focus:border-[#FF4D2D]/60";
-
   return (
-    <form onSubmit={submit} className="mx-auto mt-6 max-w-md space-y-2">
-      <div className="flex flex-col gap-2 sm:flex-row">
-        <input
-          type="text"
-          required
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder="Seu nome"
-          className={inputCls}
-        />
-        <input
-          type="email"
-          required
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="seu@email.com"
-          className={inputCls}
-        />
+    <form onSubmit={submit} className="mx-auto mt-8 max-w-md text-left">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
+        <div className="flex-1">
+          <Input
+            label="Seu email"
+            hideLabel
+            type="email"
+            name="email"
+            required
+            autoComplete="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="seu@email.com"
+            error={state === "error" ? "Não deu para inscrever. Tente de novo." : undefined}
+          />
+        </div>
+
+        <button
+          type="submit"
+          disabled={state === "loading"}
+          className="btn-primary w-full shrink-0 !justify-center sm:w-auto"
+        >
+          {state === "loading" ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+              <span className="sr-only">Enviando…</span>
+            </>
+          ) : (
+            "Inscrever-se"
+          )}
+        </button>
       </div>
-      <button
-        type="submit"
-        disabled={state === "loading"}
-        className="btn-primary w-full !justify-center"
-      >
-        {state === "loading" ? (
-          <Loader2 className="h-4 w-4 animate-spin" />
-        ) : (
-          "Inscrever-se"
-        )}
-      </button>
-      {state === "error" ? (
-        <p className="text-xs text-red-400">Erro — tente de novo.</p>
-      ) : null}
+
+      <p className="mt-3 text-caption text-muted-foreground">
+        Sem spam. Cancela quando quiser.
+      </p>
+
+      <p role="status" aria-live="polite" className="sr-only">
+        {state === "loading" ? "Enviando inscrição…" : ""}
+        {state === "error" ? "Erro ao inscrever. Tente novamente." : ""}
+      </p>
     </form>
   );
 }
 
 /** Formulário de contato — captura lead source=contato. */
 export function ContactForm() {
-  const [state, setState] = useState<"idle" | "loading" | "ok" | "error">("idle");
+  const [state, setState] = useState<FormState>("idle");
 
   async function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -101,69 +117,80 @@ export function ContactForm() {
 
   if (state === "ok") {
     return (
-      <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-8 text-center">
-        <p className="font-bold text-emerald-400">Mensagem enviada! 🥋</p>
-        <p className="mt-1 text-sm text-muted-foreground">
+      <div
+        role="status"
+        aria-live="polite"
+        className="rounded-2xl border border-border bg-[var(--surface-2)] p-8 text-center"
+      >
+        <CheckCircle2
+          className="mx-auto h-8 w-8 text-[var(--brand)]"
+          aria-hidden
+        />
+        <p className="mt-4 text-h3 text-foreground">Mensagem enviada 🥋</p>
+        <p className="mt-1.5 text-body text-muted-foreground">
           Respondemos em até 48h úteis.
         </p>
       </div>
     );
   }
 
-  const inputCls =
-    "w-full rounded-xl border border-border bg-card px-4 py-3 text-sm outline-none transition focus:border-[#FF4D2D]/60";
-
   return (
-    <form onSubmit={submit} className="space-y-4">
-      <div>
-        <label htmlFor="name" className="mb-1.5 block text-sm font-medium text-muted-foreground">
-          Nome
-        </label>
-        <input id="name" name="name" required placeholder="Seu nome" className={inputCls} />
-      </div>
-      <div>
-        <label htmlFor="email" className="mb-1.5 block text-sm font-medium text-muted-foreground">
-          Email
-        </label>
-        <input id="email" name="email" type="email" required placeholder="seu@email.com" className={inputCls} />
-      </div>
-      <div>
-        <label htmlFor="type" className="mb-1.5 block text-sm font-medium text-muted-foreground">
-          Tipo
-        </label>
-        <select id="type" name="type" className={inputCls}>
-          <option value="parceria">Parceria / Patrocínio</option>
-          <option value="colaboracao">Colaboração</option>
-          <option value="feedback">Feedback</option>
-          <option value="outro">Outro</option>
-        </select>
-      </div>
-      <div>
-        <label htmlFor="message" className="mb-1.5 block text-sm font-medium text-muted-foreground">
-          Mensagem
-        </label>
-        <textarea
-          id="message"
-          name="message"
-          required
-          rows={5}
-          placeholder="Conta pra gente..."
-          className={`${inputCls} resize-none`}
-        />
-      </div>
-      <button type="submit" disabled={state === "loading"} className="btn-primary w-full !justify-center">
+    <form onSubmit={submit} className="flex flex-col gap-5">
+      <Input label="Nome" name="name" required autoComplete="name" placeholder="Seu nome" />
+
+      <Input
+        label="Email"
+        name="email"
+        type="email"
+        required
+        autoComplete="email"
+        placeholder="seu@email.com"
+      />
+
+      <Select label="Tipo" name="type" defaultValue="parceria">
+        <option value="parceria">Parceria / Patrocínio</option>
+        <option value="colaboracao">Colaboração</option>
+        <option value="feedback">Feedback</option>
+        <option value="outro">Outro</option>
+      </Select>
+
+      <Textarea
+        label="Mensagem"
+        name="message"
+        required
+        rows={5}
+        placeholder="Conta pra gente..."
+      />
+
+      <button
+        type="submit"
+        disabled={state === "loading"}
+        className="btn-primary w-full !justify-center"
+      >
         {state === "loading" ? (
-          <Loader2 className="h-4 w-4 animate-spin" />
+          <>
+            <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+            <span className="sr-only">Enviando…</span>
+          </>
         ) : (
           <>
-            Enviar Mensagem <Send className="h-4 w-4" />
+            Enviar mensagem <Send className="h-4 w-4" aria-hidden />
           </>
         )}
       </button>
-      {state === "error" ? (
-        <p className="text-center text-xs text-red-400">Erro ao enviar — tente novamente.</p>
-      ) : null}
-      <p className="text-center text-xs text-muted-foreground">
+
+      <p role="status" aria-live="polite" className="min-h-5 text-center text-caption">
+        {state === "loading" ? (
+          <span className="sr-only">Enviando mensagem…</span>
+        ) : null}
+        {state === "error" ? (
+          <span className="text-[var(--destructive)]">
+            Erro ao enviar. Tente novamente.
+          </span>
+        ) : null}
+      </p>
+
+      <p className="text-center text-caption text-muted-foreground">
         Seus dados não são compartilhados com terceiros.
       </p>
     </form>

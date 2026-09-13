@@ -6,95 +6,151 @@ import {
   TIKTOK_URL,
   YOUTUBE_URL,
 } from "@/data/reels";
+import { categorias } from "@/data/categorias";
 
-const NAV = [
-  { href: "/", label: "Home" },
-  { href: "/videos", label: "Vídeos" },
-  { href: "/blog", label: "Blog" },
+const SITE_LINKS = [
+  { href: "/aprender", label: "Aprender" },
+  { href: "/blog", label: "Conteúdos" },
   { href: "/glossario", label: "Glossário" },
+  { href: "/videos", label: "Vídeos" },
+  { href: "/buscar", label: "Buscar" },
   { href: "/sobre", label: "Sobre" },
   { href: "/contato", label: "Contato" },
-  { href: "/50dinamicas", label: "Livro: 50 Dinâmicas" },
+];
+
+const PRODUTO_LINKS = [
+  { href: "/50dinamicas", label: "50 Dinâmicas" },
   { href: "/library", label: "Biblioteca" },
 ];
 
-/** Footer — visual original do site. */
+const SOCIAIS = [
+  { href: INSTAGRAM_URL, label: "Instagram" },
+  { href: YOUTUBE_URL, label: "YouTube" },
+  { href: TIKTOK_URL, label: "TikTok" },
+];
+
+const linkClass =
+  "inline-flex min-h-9 w-fit items-center text-small text-muted-foreground transition-colors duration-200 hover:text-foreground";
+
+function Coluna({
+  titulo,
+  children,
+}: {
+  titulo: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div>
+      <h3 className="text-label text-muted-foreground">{titulo}</h3>
+      <ul className="mt-4 flex flex-col gap-1">{children}</ul>
+    </div>
+  );
+}
+
+/** Rodapé do site público — 4 colunas. */
 export function Footer() {
   return (
-    <footer className="relative overflow-hidden border-t border-white/5 bg-[#0d0d10] text-[#71717a]">
+    <footer className="relative overflow-hidden border-t border-border bg-[var(--surface-1)]">
       <div
         aria-hidden
-        className="pointer-events-none absolute bottom-0 left-1/2 h-[200px] w-[600px] -translate-x-1/2 rounded-full bg-[#FF4D2D]/5 blur-[80px]"
+        className="pointer-events-none absolute bottom-0 left-1/2 h-[200px] w-[600px] -translate-x-1/2 rounded-full bg-[color-mix(in_oklab,var(--brand)_6%,transparent)] blur-[80px]"
       />
-      <div className="relative mx-auto max-w-6xl px-4 pb-8 pt-16 sm:px-6 lg:px-8">
-        <div className="mb-12 grid grid-cols-1 gap-12 md:grid-cols-4">
-          <div className="md:col-span-2">
-            <Link href="/" className="mb-4 flex w-fit items-center gap-2.5">
-              <span className="relative h-10 w-10 overflow-hidden rounded-full ring-2 ring-[#FF4D2D]/20">
-                <Image src="/logotipo.png" alt="lipeexplica" fill className="object-cover" />
+
+      <div className="relative mx-auto max-w-6xl px-4 pb-10 pt-16 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 gap-12 sm:grid-cols-2 lg:grid-cols-4">
+          <div>
+            <Link href="/" className="flex w-fit items-center gap-2.5">
+              <span className="relative h-10 w-10 overflow-hidden rounded-full ring-2 ring-[color-mix(in_oklab,var(--brand)_25%,transparent)]">
+                <Image
+                  src="/logotipo.webp"
+                  alt=""
+                  fill
+                  sizes="40px"
+                  className="object-cover"
+                />
               </span>
-              <span className="text-2xl font-black tracking-tight">
-                <span className="text-[#fafafa]">lipe</span>
-                <span className="text-[#FF4D2D]">explica</span>
+              <span className="text-xl font-black tracking-[-0.02em]">
+                <span className="text-foreground">lipe</span>
+                <span className="text-[var(--brand)]">explica</span>
               </span>
             </Link>
-            <p className="max-w-xs text-sm leading-relaxed">
-              Jiu-Jitsu explicado sem filtro. Técnicas, mentalidade e evolução
-              com ilustrações cinematográficas.
-            </p>
-            <div className="mt-6 flex items-center gap-4 text-sm">
-              <a href={INSTAGRAM_URL} target="_blank" rel="noopener noreferrer" className="transition hover:text-[#fafafa]">
-                Instagram
-              </a>
-              <a href={YOUTUBE_URL} target="_blank" rel="noopener noreferrer" className="transition hover:text-[#fafafa]">
-                YouTube
-              </a>
-              <a href={TIKTOK_URL} target="_blank" rel="noopener noreferrer" className="transition hover:text-[#fafafa]">
-                TikTok
-              </a>
-            </div>
-          </div>
 
-          <div>
-            <h4 className="mb-4 text-xs font-semibold uppercase tracking-widest text-[#52525b]">
-              Navegação
-            </h4>
-            <div className="flex flex-col gap-2.5">
-              {NAV.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className="w-fit text-sm transition hover:text-[#fafafa]"
-                >
-                  {link.label}
-                </Link>
+            <p className="mt-4 max-w-xs text-small text-muted-foreground">
+              Jiu-Jitsu sem enrolação. Técnicas, mentalidade e evolução
+              explicadas de forma visual.
+            </p>
+
+            <ul className="mt-6 flex flex-wrap items-center gap-4">
+              {SOCIAIS.map((s) => (
+                <li key={s.label}>
+                  <a
+                    href={s.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={linkClass}
+                  >
+                    {s.label}
+                    <span className="sr-only"> (abre em nova aba)</span>
+                  </a>
+                </li>
               ))}
-            </div>
+            </ul>
           </div>
 
-          <div>
-            <h4 className="mb-4 text-xs font-semibold uppercase tracking-widest text-[#52525b]">
-              Contato
-            </h4>
-            <a
-              href={`mailto:${CONTACT_EMAIL}`}
-              className="w-fit text-sm transition hover:text-[#FF4D2D]"
-            >
-              {CONTACT_EMAIL}
-            </a>
-            <p className="mt-2 text-xs leading-relaxed text-[#3f3f46]">
-              Parcerias e colaborações
-              <br />
-              bem-vindas!
-            </p>
+          <Coluna titulo="Aprender">
+            {categorias.map((c) => (
+              <li key={c.slug}>
+                <Link href={`/aprender/${c.slug}`} className={linkClass}>
+                  {c.nome}
+                </Link>
+              </li>
+            ))}
+          </Coluna>
+
+          <Coluna titulo="Site">
+            {SITE_LINKS.map((l) => (
+              <li key={l.href}>
+                <Link href={l.href} className={linkClass}>
+                  {l.label}
+                </Link>
+              </li>
+            ))}
+          </Coluna>
+
+          <div className="flex flex-col gap-10">
+            <Coluna titulo="Produtos">
+              {PRODUTO_LINKS.map((l) => (
+                <li key={l.href}>
+                  <Link href={l.href} className={linkClass}>
+                    {l.label}
+                  </Link>
+                </li>
+              ))}
+            </Coluna>
+
+            <div>
+              <h3 className="text-label text-muted-foreground">Contato</h3>
+              <a
+                href={`mailto:${CONTACT_EMAIL}`}
+                className="mt-4 inline-flex min-h-9 items-center text-small text-muted-foreground transition-colors hover:text-[var(--brand)]"
+              >
+                {CONTACT_EMAIL}
+              </a>
+              <p className="mt-1 text-caption text-muted-foreground">
+                Parcerias e colaborações bem-vindas.
+              </p>
+            </div>
           </div>
         </div>
 
-        <div className="flex flex-col items-center justify-between gap-4 border-t border-white/5 pt-8 sm:flex-row">
-          <p className="text-xs text-[#3f3f46]">
-            © {new Date().getFullYear()} lipeexplica. Todos os direitos reservados.
+        <div className="mt-14 flex flex-col items-center justify-between gap-4 border-t border-border pt-8 sm:flex-row">
+          <p className="text-caption text-muted-foreground">
+            © {new Date().getFullYear()} LipeExplica. Todos os direitos
+            reservados.
           </p>
-          <p className="text-xs text-[#27272a]">OSS 🥋</p>
+          <p aria-hidden className="text-caption text-muted-foreground">
+            OSS 🥋
+          </p>
         </div>
       </div>
     </footer>
