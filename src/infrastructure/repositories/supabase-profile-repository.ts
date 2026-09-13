@@ -28,6 +28,19 @@ export class SupabaseProfileRepository implements ProfileRepository {
     return (data ?? []).map(toProfile);
   }
 
+  async updateOwn(
+    id: string,
+    fields: { name?: string | null; phone?: string | null },
+  ): Promise<void> {
+    const patch: Record<string, unknown> = {};
+    if (fields.name !== undefined) patch.name = fields.name;
+    if (fields.phone !== undefined) patch.phone = fields.phone;
+    if (Object.keys(patch).length === 0) return;
+
+    const { error } = await this.db.from("profiles").update(patch).eq("id", id);
+    if (error) throw error;
+  }
+
   async upsert(
     profile: Pick<Profile, "id"> & Partial<Omit<Profile, "id" | "createdAt">>,
   ): Promise<void> {

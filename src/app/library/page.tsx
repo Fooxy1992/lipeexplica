@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { BookOpen, LogOut, ShoppingBag, TrendingUp } from "lucide-react";
+import { BookOpen, LogOut, ShoppingBag, TrendingUp, UserCog } from "lucide-react";
 import { userScopedContainer } from "@/infrastructure/di/container";
 import { signOut } from "@/app/auth/actions";
 import { LibraryCard } from "@/components/library/library-card";
@@ -43,6 +43,12 @@ export default async function LibraryPage() {
                 Admin
               </Link>
             ) : null}
+            <Link
+              href="/conta"
+              className="inline-flex items-center gap-2 rounded-full border border-[#E4EAF4] bg-white px-4 py-2 text-xs font-medium text-[#8B92A8] transition hover:border-[#FF4D2D]/40 hover:text-[#1C1E2E]"
+            >
+              <UserCog className="h-3.5 w-3.5" /> Conta
+            </Link>
             <form action={signOut}>
               <button
                 type="submit"
@@ -71,6 +77,14 @@ export default async function LibraryPage() {
                   ? "Comece sua jornada no jiu-jitsu."
                   : `${items.length} ${items.length === 1 ? "título" : "títulos"} na sua coleção`}
               </p>
+              {!profile?.name ? (
+                <Link
+                  href="/conta"
+                  className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-[#FF4D2D] underline-offset-4 hover:underline"
+                >
+                  <UserCog className="h-3.5 w-3.5" /> Complete seu perfil
+                </Link>
+              ) : null}
             </div>
 
             {items.length > 0 && (

@@ -7,7 +7,7 @@ import { createServerClient } from "@supabase/ssr";
  * flag) happen again server-side in each page — middleware is the first
  * fence, never the only one.
  */
-const PROTECTED_PREFIXES = ["/library", "/books", "/dashboard", "/admin"];
+const PROTECTED_PREFIXES = ["/library", "/books", "/dashboard", "/admin", "/conta"];
 
 /**
  * Throttle for the last_seen_at write: one UPDATE per user per window, marked
