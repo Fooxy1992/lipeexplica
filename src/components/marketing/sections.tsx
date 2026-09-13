@@ -626,14 +626,7 @@ function PricingCard({ productId, plan }: { productId: string; plan: ProductPlan
           : { borderColor: "rgba(255,255,255,0.08)", background: "rgba(255,255,255,0.03)" }
       }
     >
-      {plan.highlight && (
-        <span
-          className="absolute right-4 top-4 rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-widest text-[#09090b]"
-          style={{ background: GOLD }}
-        >
-          Recomendado
-        </span>
-      )}
+      {/* top row: icon + name/badge + price */}
       <div className="flex items-start gap-3">
         <div
           className="mt-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-xl"
@@ -650,7 +643,17 @@ function PricingCard({ productId, plan }: { productId: string; plan: ProductPlan
           )}
         </div>
         <div className="min-w-0 flex-1">
-          <p className="font-display font-semibold text-white">{plan.name}</p>
+          <div className="flex flex-wrap items-center gap-2">
+            <p className="font-display font-semibold text-white">{plan.name}</p>
+            {plan.highlight && (
+              <span
+                className="rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-widest text-[#09090b]"
+                style={{ background: GOLD }}
+              >
+                Recomendado
+              </span>
+            )}
+          </div>
           {plan.description && (
             <p className="mt-0.5 text-xs text-white/40">{plan.description}</p>
           )}
