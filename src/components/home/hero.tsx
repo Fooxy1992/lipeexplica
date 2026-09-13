@@ -3,8 +3,8 @@ import Image from "next/image";
 import { ArrowRight } from "lucide-react";
 
 const NUMEROS = [
-  { valor: "+3.100", rotulo: "Seguidores no IG" },
-  { valor: "+432K", rotulo: "Visualizações" },
+  { valor: "+5.100", rotulo: "Seguidores no IG" },
+  { valor: "+900K", rotulo: "Visualizações" },
   { valor: "1/sem.", rotulo: "Novo conteúdo" },
 ];
 
