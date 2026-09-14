@@ -39,6 +39,12 @@ export async function POST(request: Request) {
       case 'checkout.session.completed': {
         const session = event.data.object;
         if (session.mode === 'payment' && session.payment_status === 'paid') {
+          // ── RIFA ────────────────────────────────────────────────────────────
+          if (session.metadata?.type === 'raffle') {
+            await c.confirmRafflePayment.execute({ stripeSessionId: session.id });
+            break;
+          }
+          // ── PRODUTO NORMAL ──────────────────────────────────────────────────
           const productId = session.metadata?.product_id;
           const email = session.customer_details?.email ?? session.customer_email;
           if (productId && email) {
