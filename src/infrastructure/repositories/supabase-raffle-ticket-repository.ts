@@ -84,7 +84,9 @@ export class SupabaseRaffleTicketRepository implements RaffleTicketRepository {
     if (error) throw error;
     if (!data || data.length === 0) return null;
     const idx = Math.floor(Math.random() * data.length);
-    return toRaffleTicket(data[idx]);
+    const row = data[idx];
+    if (!row) return null;
+    return toRaffleTicket(row);
   }
 
   async countAvailable(raffleId: string): Promise<number> {
