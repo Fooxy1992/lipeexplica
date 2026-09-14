@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { BookOpen, LogOut, ShoppingBag, TrendingUp, UserCog } from "lucide-react";
-import { userScopedContainer } from "@/infrastructure/di/container";
+import { userScopedContainer, adminContainer } from "@/infrastructure/di/container";
 import { signOut } from "@/app/auth/actions";
 import { LibraryCard } from "@/components/library/library-card";
 import { AccountPanel } from "@/components/account/account-panel";
@@ -43,6 +43,19 @@ export default async function LibraryPage({
           c.purchases.listByUser(user.id),
           c.subscriptions.listByUser(user.id),
           c.products.listAll(),
+          (async () => {
+            const ac = adminContainer();
+            const rp = await ac.rafflePurchases.listByEmail(user.email ?? '');
+            const withTickets = await Promise.all(
+              rp.map(async (p) => ({
+                purchase: p,
+                ticketNumbers: (await ac.raffleTickets.listByPurchase(p.id))
+                  .map((t) => t.ticketNumber)
+                  .sort((a, b) => a - b),
+              }))
+            );
+            return withTickets;
+          })(),
         ])
       : null;
 
@@ -168,6 +181,7 @@ export default async function LibraryPage({
               purchases={account[0]}
               subscriptions={account[1]}
               products={account[2]}
+              rafflePurchases={account[3]}
             />
           </div>
         ) : items.length === 0 ? (

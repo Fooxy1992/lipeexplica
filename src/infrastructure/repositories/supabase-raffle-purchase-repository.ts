@@ -65,4 +65,16 @@ export class SupabaseRafflePurchaseRepository implements RafflePurchaseRepositor
     if (error) throw error;
     return (data ?? []).map(toRafflePurchase);
   }
+
+  async listByEmail(email: string): Promise<RafflePurchase[]> {
+    const { data, error } = await this.db
+      .from('raffle_purchases')
+      .select('*')
+      .eq('buyer_email', email.toLowerCase())
+      .eq('status', 'paid')
+      .order('created_at', { ascending: false })
+      .returns<RafflePurchaseRow[]>();
+    if (error) throw error;
+    return (data ?? []).map(toRafflePurchase);
+  }
 }

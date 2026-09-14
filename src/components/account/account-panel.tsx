@@ -4,6 +4,7 @@ import type { User } from "@supabase/supabase-js";
 import type { Product } from "@/core/domain/entities/product";
 import type { Purchase } from "@/core/domain/entities/purchase";
 import type { Profile } from "@/core/domain/entities/profile";
+import type { RafflePurchase } from "@/core/domain/entities/raffle-purchase";
 import {
   isActiveSubscription,
   type Subscription,
@@ -47,12 +48,14 @@ export function AccountPanel({
   purchases,
   subscriptions,
   products,
+  rafflePurchases = [],
 }: {
   user: User;
   profile: Profile | null;
   purchases: Purchase[];
   subscriptions: Subscription[];
   products: Product[];
+  rafflePurchases?: Array<{ purchase: RafflePurchase; ticketNumbers: number[] }>;
 }) {
   const productTitle = new Map(products.map((p) => [p.id, p.title]));
   const activeSub = subscriptions.find(isActiveSubscription);
@@ -121,6 +124,50 @@ export function AccountPanel({
           </ul>
         )}
       </Section>
+
+      {rafflePurchases.length > 0 && (
+        <Section
+          title="Minhas Rifas"
+          description="Bilhetes comprados nas rifas ativas."
+        >
+          <ul className="space-y-4">
+            {rafflePurchases.map(({ purchase, ticketNumbers }) => (
+              <li key={purchase.id} className="rounded-xl border border-[#E4EAF4] p-4">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-medium text-[#1C1E2E]">
+                      {purchase.ticketQuantity} bilhete{purchase.ticketQuantity > 1 ? 's' : ''}
+                    </p>
+                    <p className="text-xs text-[#8B92A8]">
+                      {formatDate(purchase.createdAt)} ·{' '}
+                      {(purchase.amountCents / 100).toLocaleString('pt-BR', {
+                        style: 'currency',
+                        currency: 'BRL',
+                      })}
+                    </p>
+                  </div>
+                  <Link
+                    href={`/rifa/confirmacao/${purchase.confirmationToken}`}
+                    className="text-xs font-semibold text-[#FF4D2D] underline-offset-4 hover:underline"
+                  >
+                    Ver comprovante
+                  </Link>
+                </div>
+                <div className="mt-3 flex flex-wrap gap-1.5">
+                  {ticketNumbers.map((n) => (
+                    <span
+                      key={n}
+                      className="rounded-md border border-amber-200 bg-amber-50 px-2 py-0.5 font-mono text-xs text-amber-700"
+                    >
+                      #{n}
+                    </span>
+                  ))}
+                </div>
+              </li>
+            ))}
+          </ul>
+        </Section>
+      )}
 
       {activeSub ? (
         <Section

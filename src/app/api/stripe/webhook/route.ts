@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import type Stripe from 'stripe';
 import { getStripe, getStripeWebhookSecret } from '@/infrastructure/stripe/stripe-client';
 import { adminContainer, logger } from '@/infrastructure/di/container';
+import { createSupabaseAnonClient } from '@/infrastructure/supabase/server';
+import { publicEnv } from '@/lib/env';
 
 export const runtime = 'nodejs';
 
@@ -42,6 +44,19 @@ export async function POST(request: Request) {
           // ── RIFA ────────────────────────────────────────────────────────────
           if (session.metadata?.type === 'raffle') {
             await c.confirmRafflePayment.execute({ stripeSessionId: session.id });
+            // Send magic link so buyer can see tickets in /library?aba=conta
+            const buyerEmail = session.customer_details?.email ?? session.customer_email;
+            if (buyerEmail) {
+              const anonClient = createSupabaseAnonClient();
+              await anonClient.auth.signInWithOtp({
+                email: buyerEmail,
+                options: {
+                  shouldCreateUser: true,
+                  emailRedirectTo: `${publicEnv.NEXT_PUBLIC_SITE_URL}/library?aba=conta`,
+                },
+              });
+              log.info('raffle.invite_sent', { email: buyerEmail });
+            }
             break;
           }
           // ── PRODUTO NORMAL ──────────────────────────────────────────────────

@@ -15,4 +15,5 @@ export interface RafflePurchaseRepository {
   findByToken(token: string): Promise<RafflePurchase | null>;
   updateStatus(id: string, status: RafflePurchaseStatus, sessionId?: string): Promise<void>;
   listByRaffle(raffleId: string): Promise<RafflePurchase[]>;
+  listByEmail(email: string): Promise<RafflePurchase[]>;
 }
