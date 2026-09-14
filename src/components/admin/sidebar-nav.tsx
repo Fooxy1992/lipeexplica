@@ -22,7 +22,7 @@ const NAV = [
   { href: "/admin/purchases",     label: "Compras",         icon: ShoppingCart },
   { href: "/admin/subscriptions", label: "Assinaturas",     icon: CreditCard },
   { href: "/admin/coupons",       label: "Cupons",          icon: Ticket },
-  { href: "/admin/rifa",          label: "Rifa",            icon: Gift },
+  { href: "/admin/rifa",          label: "Ação",            icon: Gift },
   { href: "/admin/invites",       label: "Convites",        icon: Link2 },
   { href: "/admin/users",         label: "Usuários",        icon: Users },
   { href: "/admin/access",        label: "Acessos",         icon: BookOpen },

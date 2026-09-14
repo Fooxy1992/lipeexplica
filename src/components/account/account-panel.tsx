@@ -127,8 +127,8 @@ export function AccountPanel({
 
       {rafflePurchases.length > 0 && (
         <Section
-          title="Minhas Rifas"
-          description="Bilhetes comprados nas rifas ativas."
+          title="Minhas Ações"
+          description="Ações compradas na ação solidária."
         >
           <ul className="space-y-4">
             {rafflePurchases.map(({ purchase, ticketNumbers }) => (
@@ -136,7 +136,7 @@ export function AccountPanel({
                 <div className="flex items-center justify-between gap-3">
                   <div>
                     <p className="text-sm font-medium text-[#1C1E2E]">
-                      {purchase.ticketQuantity} bilhete{purchase.ticketQuantity > 1 ? 's' : ''}
+                      {purchase.ticketQuantity} ação{purchase.ticketQuantity > 1 ? 'ões' : ''}
                     </p>
                     <p className="text-xs text-[#8B92A8]">
                       {formatDate(purchase.createdAt)} ·{' '}

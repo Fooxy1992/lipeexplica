@@ -28,8 +28,8 @@ export default async function AdminRifaPage() {
   if (!raffle) {
     return (
       <div>
-        <h1 className="font-display text-3xl font-semibold">Rifa</h1>
-        <p className="mt-4 text-sm text-muted-foreground">Nenhuma rifa ativa no momento.</p>
+        <h1 className="font-display text-3xl font-semibold">Ação</h1>
+        <p className="mt-4 text-sm text-muted-foreground">Nenhuma ação ativa no momento.</p>
       </div>
     );
   }
@@ -49,7 +49,7 @@ export default async function AdminRifaPage() {
     <div>
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="font-display text-3xl font-semibold">Rifa</h1>
+          <h1 className="font-display text-3xl font-semibold">Ação</h1>
           <p className="mt-1 text-sm text-muted-foreground">{raffle.title} · {raffle.prizeName}</p>
         </div>
         {canDraw && (

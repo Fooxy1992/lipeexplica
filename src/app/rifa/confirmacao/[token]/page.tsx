@@ -4,7 +4,7 @@ import { CheckCircle2, Ticket, ArrowLeft } from 'lucide-react';
 import { adminContainer } from '@/infrastructure/di/container';
 
 export const dynamic = 'force-dynamic';
-export const metadata: Metadata = { title: 'Confirmação — Rifa' };
+export const metadata: Metadata = { title: 'Confirmação — Ação' };
 
 function formatBRL(cents: number) {
   return (cents / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -88,7 +88,7 @@ export default async function RifaConfirmacaoPage({
           </div>
 
           <p className="mt-6 text-center text-xs text-white/40">
-            Guarde esta página. O sorteio será realizado automaticamente 5 dias após todos os bilhetes serem vendidos.
+            Guarda esta página. O sorteio será realizado automaticamente 5 dias após todas as ações serem vendidas.
           </p>
 
           <Link

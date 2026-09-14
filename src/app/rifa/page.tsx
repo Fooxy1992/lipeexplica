@@ -4,7 +4,7 @@ import RaffleClient from './raffle-client';
 
 export const dynamic = 'force-dynamic';
 
-export const metadata: Metadata = { title: 'Rifa — Kimono Completo' };
+export const metadata: Metadata = { title: 'Ação — Kimono Completo' };
 
 export default async function RifaPage() {
   const c = adminContainer();

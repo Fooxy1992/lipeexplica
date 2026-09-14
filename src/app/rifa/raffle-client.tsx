@@ -130,7 +130,7 @@ export default function RaffleClient({ raffle, initialPaid, initialReserved }: P
           {/* Progress */}
           <div className="mt-6 space-y-2">
             <div className="flex justify-between text-sm text-white/70">
-              <span>{status.paid_tickets} bilhetes vendidos</span>
+              <span>{status.paid_tickets} ações vendidas</span>
               <span>{status.available_tickets} disponíveis</span>
             </div>
             <div className="h-3 overflow-hidden rounded-full bg-white/10">
@@ -149,7 +149,7 @@ export default function RaffleClient({ raffle, initialPaid, initialReserved }: P
           {status.status === 'completed' && status.winner_ticket_id && (
             <div className="mt-5 flex items-center justify-center gap-2 rounded-xl border border-amber-400/20 bg-amber-400/10 px-4 py-3 text-sm text-amber-300">
               <Trophy className="h-4 w-4" />
-              Sorteio realizado! Bilhete vencedor: #{status.winner_ticket_id}
+              Sorteio realizado! Ação vencedora: #{status.winner_ticket_id}
             </div>
           )}
           {status.draw_date && status.status !== 'completed' && (
@@ -164,10 +164,10 @@ export default function RaffleClient({ raffle, initialPaid, initialReserved }: P
         <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-5 text-white backdrop-blur-md">
           <p className="mb-3 text-sm font-semibold text-white/80">Faixas de preço</p>
           <div className="grid grid-cols-2 gap-2 text-sm text-white/60">
-            <div className="rounded-lg bg-white/5 px-3 py-2">1–2 bilhetes · <span className="text-white/90">R$ 25/un</span></div>
-            <div className="rounded-lg bg-white/5 px-3 py-2">3–4 bilhetes · <span className="text-white/90">R$ 20/un</span></div>
-            <div className="rounded-lg bg-white/5 px-3 py-2">5–9 bilhetes · <span className="text-white/90">R$ 18/un</span></div>
-            <div className="rounded-lg bg-white/5 px-3 py-2">10+ bilhetes · <span className="text-white/90">R$ 15/un</span></div>
+            <div className="rounded-lg bg-white/5 px-3 py-2">1–2 ações · <span className="text-white/90">R$ 25/un</span></div>
+            <div className="rounded-lg bg-white/5 px-3 py-2">3–4 ações · <span className="text-white/90">R$ 20/un</span></div>
+            <div className="rounded-lg bg-white/5 px-3 py-2">5–9 ações · <span className="text-white/90">R$ 18/un</span></div>
+            <div className="rounded-lg bg-white/5 px-3 py-2">10+ ações · <span className="text-white/90">R$ 15/un</span></div>
           </div>
         </div>
 
@@ -175,9 +175,9 @@ export default function RaffleClient({ raffle, initialPaid, initialReserved }: P
         {soldOut ? (
           <div className="rounded-2xl border border-white/10 bg-white/[0.06] p-8 text-center text-white backdrop-blur-md">
             <Ticket className="mx-auto h-8 w-8 text-white/30" />
-            <p className="mt-3 text-lg font-semibold">Bilhetes esgotados</p>
+            <p className="mt-3 text-lg font-semibold">Ações esgotadas</p>
             <p className="mt-1 text-sm text-white/50">
-              {status.status === 'completed' ? 'A rifa já foi sorteada.' : 'Todos os bilhetes foram reservados ou vendidos.'}
+              {status.status === 'completed' ? 'A ação já foi sorteada.' : 'Todas as ações foram reservadas ou vendidas.'}
             </p>
           </div>
         ) : (
@@ -185,11 +185,11 @@ export default function RaffleClient({ raffle, initialPaid, initialReserved }: P
             onSubmit={handleSubmit}
             className="rounded-3xl border border-white/10 bg-white/[0.06] p-8 text-white backdrop-blur-md"
           >
-            <h2 className="mb-5 text-lg font-semibold">Participar da rifa</h2>
+            <h2 className="mb-5 text-lg font-semibold">Participar da ação</h2>
 
             {/* Quick-select buttons */}
             <div className="mb-4">
-              <p className="mb-2 text-sm text-white/60">Quantidade de bilhetes</p>
+              <p className="mb-2 text-sm text-white/60">Quantidade de ações</p>
               <div className="flex gap-2">
                 {[1, 3, 5, 10].map((n) => (
                   <button
@@ -265,7 +265,7 @@ export default function RaffleClient({ raffle, initialPaid, initialReserved }: P
               className="mt-5 w-full rounded-full py-3.5 text-sm font-bold text-[oklch(0.20_0.04_265)] transition hover:brightness-105 disabled:opacity-50"
               style={{ background: 'linear-gradient(135deg, oklch(0.88 0.14 85), oklch(0.78 0.16 80))' }}
             >
-              {loading ? 'Processando…' : `Comprar ${qty} bilhete${qty > 1 ? 's' : ''} · ${formatBRL(priceForQty(qty))}`}
+              {loading ? 'Processando…' : `Comprar ${qty} ação${qty > 1 ? 'ões' : ''} · ${formatBRL(priceForQty(qty))}`}
             </button>
 
             <p className="mt-3 text-center text-xs text-white/40">
