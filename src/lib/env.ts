@@ -15,6 +15,8 @@ const serverSchema = z.object({
   SUPABASE_SERVICE_ROLE_KEY: z.string().min(1),
   N8N_PAYMENT_WEBHOOK_URL: z.string().url().optional(),
   N8N_WEBHOOK_TOKEN: z.string().optional(),
+  // Cron auth — opcional localmente, obrigatório em produção
+  CRON_SECRET: z.string().optional(),
 });
 
 const publicSchema = z.object({
@@ -61,6 +63,7 @@ export function serverEnv(): z.infer<typeof serverSchema> {
       SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
       N8N_PAYMENT_WEBHOOK_URL: process.env.N8N_PAYMENT_WEBHOOK_URL || undefined,
       N8N_WEBHOOK_TOKEN: process.env.N8N_WEBHOOK_TOKEN || undefined,
+      CRON_SECRET: process.env.CRON_SECRET || undefined,
     });
   }
   return cachedServerEnv;

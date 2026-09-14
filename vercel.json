@@ -3,6 +3,14 @@
     {
       "path": "/api/keepalive",
       "schedule": "0 12 * * *"
+    },
+    {
+      "path": "/api/cron/raffle-draw",
+      "schedule": "0 13 * * *"
+    },
+    {
+      "path": "/api/cron/raffle-cleanup",
+      "schedule": "0 * * * *"
     }
   ]
 }
