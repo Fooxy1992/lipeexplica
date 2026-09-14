@@ -11,6 +11,8 @@ import { ComeceAquiSection } from "@/components/home/comece-aqui-section";
 import { SobreSection } from "@/components/home/sobre-section";
 import { NewsletterSection } from "@/components/home/newsletter-section";
 import { organizationJsonLd, websiteJsonLd } from "@/lib/structured-data";
+import { AcaoSection } from "@/components/home/acao-section";
+import { AcaoPopup } from "@/components/home/acao-popup";
 
 export const dynamic = "force-dynamic";
 
@@ -45,11 +47,13 @@ export default async function HomePage() {
         <CategoriasSection />
         <MetodoSection />
         <ProdutoSection />
+        <AcaoSection />
         <ComeceAquiSection />
         <SobreSection />
         <NewsletterSection />
       </main>
 
+      <AcaoPopup />
       <Footer />
     </div>
   );
