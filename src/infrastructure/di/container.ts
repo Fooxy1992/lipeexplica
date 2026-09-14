@@ -13,6 +13,9 @@ import { SupabaseSubscriptionRepository } from "@/infrastructure/repositories/su
 import { SupabasePreviewAccessRepository } from "@/infrastructure/repositories/supabase-preview-access-repository";
 import { SupabaseBookPageRepository } from "@/infrastructure/repositories/supabase-book-page-repository";
 import { SupabaseAnalyticsRepository } from "@/infrastructure/repositories/supabase-analytics-repository";
+import { SupabaseRaffleRepository } from "@/infrastructure/repositories/supabase-raffle-repository";
+import { SupabaseRaffleTicketRepository } from "@/infrastructure/repositories/supabase-raffle-ticket-repository";
+import { SupabaseRafflePurchaseRepository } from "@/infrastructure/repositories/supabase-raffle-purchase-repository";
 import { SupabaseAuthGateway } from "@/infrastructure/supabase/supabase-auth-gateway";
 import { StripePaymentGateway } from "@/infrastructure/stripe/stripe-payment-gateway";
 import { getStripe } from "@/infrastructure/stripe/stripe-client";
@@ -25,6 +28,10 @@ import { GetUserLibrary } from "@/core/application/use-cases/get-user-library";
 import { GetBookAccess } from "@/core/application/use-cases/get-book-access";
 import { SaveReadingProgress } from "@/core/application/use-cases/save-reading-progress";
 import { TrackAnalyticsEvent } from "@/core/application/use-cases/track-analytics-event";
+import { PurchaseRaffleTickets } from "@/core/application/use-cases/purchase-raffle-tickets";
+import { ConfirmRafflePayment } from "@/core/application/use-cases/confirm-raffle-payment";
+import { ReleaseExpiredReservations } from "@/core/application/use-cases/release-expired-reservations";
+import { DrawRaffleWinner } from "@/core/application/use-cases/draw-raffle-winner";
 import { publicEnv, serverEnv } from "@/lib/env";
 
 /**
@@ -49,6 +56,9 @@ function buildRepos(db: SupabaseClient) {
     bookPages: new SupabaseBookPageRepository(db),
     previewAccess: new SupabasePreviewAccessRepository(db),
     analytics: new SupabaseAnalyticsRepository(db),
+    raffleRepo: new SupabaseRaffleRepository(db),
+    raffleTickets: new SupabaseRaffleTicketRepository(db),
+    rafflePurchases: new SupabaseRafflePurchaseRepository(db),
   };
 }
 
@@ -105,6 +115,29 @@ export function adminContainer() {
     get payments() {
       return new StripePaymentGateway(getStripe());
     },
+    // Lazy: requer Stripe secret — não bloqueia páginas sem checkout
+    get purchaseRaffleTickets() {
+      return new PurchaseRaffleTickets(
+        repos.raffleRepo,
+        repos.raffleTickets,
+        repos.rafflePurchases,
+        getStripe(),
+        logger,
+      );
+    },
+    confirmRafflePayment: new ConfirmRafflePayment(
+      repos.raffleRepo,
+      repos.raffleTickets,
+      repos.rafflePurchases,
+      logger,
+    ),
+    releaseExpiredReservations: new ReleaseExpiredReservations(repos.raffleTickets, logger),
+    drawRaffleWinner: new DrawRaffleWinner(
+      repos.raffleRepo,
+      repos.raffleTickets,
+      repos.rafflePurchases,
+      logger,
+    ),
     handleCheckoutCompleted: new HandleCheckoutCompleted(
       repos.products,
       repos.purchases,

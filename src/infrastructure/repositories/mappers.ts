@@ -3,12 +3,18 @@ import type { ProductPlan } from "@/core/domain/entities/product-plan";
 import type { Purchase } from "@/core/domain/entities/purchase";
 import type { Profile } from "@/core/domain/entities/profile";
 import type { ReadingProgress } from "@/core/domain/entities/reading-progress";
+import type { Raffle } from "@/core/domain/entities/raffle";
+import type { RaffleTicket } from "@/core/domain/entities/raffle-ticket";
+import type { RafflePurchase } from "@/core/domain/entities/raffle-purchase";
 import type {
   ProductRow,
   ProductPlanRow,
   ProfileRow,
   PurchaseRow,
   ReadingProgressRow,
+  RaffleRow,
+  RaffleTicketRow,
+  RafflePurchaseRow,
 } from "@/infrastructure/supabase/database.types";
 
 export function toProduct(row: ProductRow): Product {
@@ -83,5 +89,47 @@ export function toReadingProgress(row: ReadingProgressRow): ReadingProgress {
     favorites: row.favorites ?? [],
     completed: row.completed,
     lastAccessedAt: row.last_accessed_at,
+  };
+}
+
+export function toRaffle(row: RaffleRow): Raffle {
+  return {
+    id: row.id,
+    title: row.title,
+    prizeName: row.prize_name,
+    prizeImageUrl: row.prize_image_url,
+    totalTickets: row.total_tickets,
+    status: row.status,
+    drawDate: row.draw_date,
+    winnerTicketId: row.winner_ticket_id,
+    createdAt: row.created_at,
+  };
+}
+
+export function toRaffleTicket(row: RaffleTicketRow): RaffleTicket {
+  return {
+    id: row.id,
+    raffleId: row.raffle_id,
+    ticketNumber: row.ticket_number,
+    status: row.status,
+    reservedUntil: row.reserved_until,
+    purchaseId: row.purchase_id,
+    createdAt: row.created_at,
+  };
+}
+
+export function toRafflePurchase(row: RafflePurchaseRow): RafflePurchase {
+  return {
+    id: row.id,
+    raffleId: row.raffle_id,
+    stripeSessionId: row.stripe_session_id,
+    ticketQuantity: row.ticket_quantity,
+    amountCents: row.amount_cents,
+    status: row.status,
+    buyerName: row.buyer_name,
+    buyerEmail: row.buyer_email,
+    buyerPhone: row.buyer_phone,
+    confirmationToken: row.confirmation_token,
+    createdAt: row.created_at,
   };
 }

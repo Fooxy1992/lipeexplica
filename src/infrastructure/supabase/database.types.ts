@@ -70,3 +70,39 @@ export interface ReadingProgressRow {
   last_accessed_at: string;
   open_count: number;
 }
+
+export interface RaffleRow {
+  id: string;
+  title: string;
+  prize_name: string;
+  prize_image_url: string | null;
+  total_tickets: number;
+  status: 'active' | 'sold_out' | 'drawing' | 'completed';
+  draw_date: string | null;
+  winner_ticket_id: string | null;
+  created_at: string;
+}
+
+export interface RaffleTicketRow {
+  id: string;
+  raffle_id: string;
+  ticket_number: number;
+  status: 'available' | 'reserved' | 'paid';
+  reserved_until: string | null;
+  purchase_id: string | null;
+  created_at: string;
+}
+
+export interface RafflePurchaseRow {
+  id: string;
+  raffle_id: string;
+  stripe_session_id: string | null;
+  ticket_quantity: number;
+  amount_cents: number;
+  status: 'pending' | 'paid' | 'failed' | 'expired';
+  buyer_name: string;
+  buyer_email: string;
+  buyer_phone: string | null;
+  confirmation_token: string;
+  created_at: string;
+}
