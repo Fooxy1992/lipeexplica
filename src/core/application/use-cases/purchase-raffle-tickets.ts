@@ -72,8 +72,8 @@ export class PurchaseRaffleTickets {
             currency: 'brl',
             unit_amount: amountCents,
             product_data: {
-              name: `Rifa — ${input.quantity} bilhete${input.quantity > 1 ? 's' : ''}`,
-              description: `Bilhete${input.quantity > 1 ? 's' : ''}: ${ticketNumbers.join(', ')}`,
+              name: `Ação — ${input.quantity} ação${input.quantity > 1 ? 'ões' : ''}`,
+              description: `Ação${input.quantity > 1 ? 'ões' : ''}: ${ticketNumbers.join(', ')}`,
             },
           },
           quantity: 1,
@@ -81,8 +81,8 @@ export class PurchaseRaffleTickets {
       ],
       customer_email: input.buyerEmail,
       phone_number_collection: { enabled: true },
-      success_url: `${input.siteUrl}/rifa/confirmacao/${purchase.confirmationToken}`,
-      cancel_url: `${input.siteUrl}/rifa`,
+      success_url: `${input.siteUrl}/acao/confirmacao/${purchase.confirmationToken}`,
+      cancel_url: `${input.siteUrl}/acao`,
       metadata: {
         type: 'raffle',
         raffle_id: input.raffleId,

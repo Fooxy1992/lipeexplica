@@ -102,7 +102,7 @@ export default async function AdminRifaPage() {
             <tr>
               <th className="px-4 py-3">Data</th>
               <th className="px-4 py-3">Comprador</th>
-              <th className="px-4 py-3">Bilhetes</th>
+              <th className="px-4 py-3">Ações</th>
               <th className="px-4 py-3">Valor</th>
               <th className="px-4 py-3">Status</th>
             </tr>

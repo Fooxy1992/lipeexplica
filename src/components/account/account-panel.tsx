@@ -147,7 +147,7 @@ export function AccountPanel({
                     </p>
                   </div>
                   <Link
-                    href={`/rifa/confirmacao/${purchase.confirmationToken}`}
+                    href={`/acao/confirmacao/${purchase.confirmationToken}`}
                     className="text-xs font-semibold text-[#FF4D2D] underline-offset-4 hover:underline"
                   >
                     Ver comprovante

@@ -27,21 +27,18 @@ export function AcaoPopup() {
       className="fixed inset-0 z-50 flex items-end justify-center p-4 sm:items-center"
       role="dialog"
       aria-modal="true"
-      aria-label="Ação solidária"
+      aria-label="Ação"
     >
-      {/* Backdrop */}
       <div
         className="absolute inset-0 bg-black/60 backdrop-blur-sm"
         onClick={close}
       />
 
-      {/* Card */}
-      <div className="relative w-full max-w-sm overflow-hidden rounded-3xl border border-white/10 bg-[oklch(0.16_0.04_265)] text-white shadow-2xl">
-        {/* Glow */}
+      <div className="relative w-full max-w-sm overflow-hidden rounded-3xl border border-white/[0.08] bg-[#121314] text-white shadow-2xl">
         <div
           aria-hidden
-          className="pointer-events-none absolute -top-20 left-1/2 h-48 w-48 -translate-x-1/2 rounded-full opacity-30 blur-2xl"
-          style={{ background: 'radial-gradient(circle, var(--gold, #d4a017), transparent 70%)' }}
+          className="pointer-events-none absolute -top-20 left-1/2 h-48 w-48 -translate-x-1/2 rounded-full opacity-20 blur-2xl"
+          style={{ background: 'radial-gradient(circle, #ff4b2b, transparent 70%)' }}
         />
 
         <button
@@ -53,14 +50,11 @@ export function AcaoPopup() {
         </button>
 
         <div className="relative p-8 text-center">
-          <div className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-amber-400/15">
-            <Gift className="h-7 w-7 text-amber-300" />
+          <div className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-[#ff4b2b]/10">
+            <Gift className="h-7 w-7 text-[#ff4b2b]" />
           </div>
 
-          <p className="mt-4 text-xs font-semibold uppercase tracking-widest text-amber-400">
-            Ação solidária
-          </p>
-          <h2 className="mt-2 font-display text-2xl font-bold leading-tight">
+          <h2 className="mt-4 font-display text-2xl font-bold leading-tight">
             Ganhe um Kimono Completo
           </h2>
           <p className="mt-3 text-sm leading-relaxed text-white/60">
@@ -70,10 +64,9 @@ export function AcaoPopup() {
 
           <div className="mt-6 space-y-3">
             <Link
-              href="/rifa"
+              href="/acao"
               onClick={close}
-              className="block w-full rounded-full py-3 text-sm font-bold text-[oklch(0.18_0.04_265)] transition hover:brightness-105"
-              style={{ background: 'linear-gradient(135deg, oklch(0.88 0.14 85), oklch(0.78 0.16 80))' }}
+              className="block w-full rounded-full bg-[#ff4b2b] py-3 text-sm font-bold text-white transition hover:brightness-110"
             >
               Ver a ação
             </Link>
