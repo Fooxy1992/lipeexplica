@@ -19,7 +19,8 @@ export default async function AcaoPage() {
   }
 
   const paid = await c.raffleTickets.countByStatus(raffle.id, 'paid');
-  const reserved = await c.raffleTickets.countByStatus(raffle.id, 'reserved');
+  const available = await c.raffleTickets.countAvailable(raffle.id);
+  const reserved = Math.max(0, raffle.totalTickets - paid - available);
 
   return (
     <RaffleClient

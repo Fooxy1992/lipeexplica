@@ -10,14 +10,16 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
   if (!raffle) return NextResponse.json({ error: 'Não encontrada' }, { status: 404 });
 
   const paid = await c.raffleTickets.countByStatus(id, 'paid');
-  const reserved = await c.raffleTickets.countByStatus(id, 'reserved');
+  const available = await c.raffleTickets.countAvailable(id);
+  // reserved = total minus paid minus truly-available (excludes expired reservations)
+  const reserved = raffle.totalTickets - paid - available;
 
   return NextResponse.json({
     status: raffle.status,
     total_tickets: raffle.totalTickets,
     paid_tickets: paid,
-    reserved_tickets: reserved,
-    available_tickets: raffle.totalTickets - paid - reserved,
+    reserved_tickets: Math.max(0, reserved),
+    available_tickets: available,
     draw_date: raffle.drawDate,
     winner_ticket_id: raffle.winnerTicketId,
   });
