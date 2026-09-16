@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Gift, Ticket, Clock, Trophy } from 'lucide-react';
 import type { Raffle } from '@/core/domain/entities/raffle';
 
@@ -56,6 +56,13 @@ export default function RaffleClient({ raffle, initialPaid, initialReserved }: P
     draw_date: raffle.drawDate,
     winner_ticket_id: raffle.winnerTicketId,
   });
+
+  const viewTracked = useRef(false);
+  useEffect(() => {
+    if (viewTracked.current) return;
+    viewTracked.current = true;
+    fetch(`/api/raffle/${raffle.id}/view`, { method: 'POST' }).catch(() => {});
+  }, [raffle.id]);
 
   const fetchStatus = useCallback(async () => {
     try {

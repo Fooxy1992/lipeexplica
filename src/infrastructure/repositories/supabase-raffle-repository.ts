@@ -55,4 +55,9 @@ export class SupabaseRaffleRepository implements RaffleRepository {
     if (error) throw error;
     return (data ?? []).map(toRaffle);
   }
+
+  async incrementViewCount(id: string): Promise<void> {
+    const { error } = await this.db.rpc('increment_raffle_views', { p_raffle_id: id });
+    if (error) throw error;
+  }
 }

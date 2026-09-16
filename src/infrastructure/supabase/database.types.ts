@@ -80,6 +80,7 @@ export interface RaffleRow {
   status: 'active' | 'sold_out' | 'drawing' | 'completed';
   draw_date: string | null;
   winner_ticket_id: string | null;
+  view_count: number;
   created_at: string;
 }
 

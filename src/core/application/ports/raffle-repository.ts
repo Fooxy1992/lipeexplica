@@ -6,4 +6,5 @@ export interface RaffleRepository {
   updateStatus(id: string, status: RaffleStatus, drawDate?: string): Promise<void>;
   setWinner(id: string, winnerTicketId: string): Promise<void>;
   listDueForDraw(): Promise<Raffle[]>;
+  incrementViewCount(id: string): Promise<void>;
 }

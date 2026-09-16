@@ -9,5 +9,6 @@ export interface Raffle {
   status: RaffleStatus;
   drawDate: string | null;
   winnerTicketId: string | null;
+  viewCount: number;
   createdAt: string;
 }

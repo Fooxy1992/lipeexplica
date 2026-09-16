@@ -102,6 +102,7 @@ export function toRaffle(row: RaffleRow): Raffle {
     status: row.status,
     drawDate: row.draw_date,
     winnerTicketId: row.winner_ticket_id,
+    viewCount: row.view_count ?? 0,
     createdAt: row.created_at,
   };
 }

@@ -58,7 +58,7 @@ export default async function AdminRifaPage() {
       </div>
 
       {/* Stats */}
-      <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
+      <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-5">
         <div className="rounded-2xl border border-border bg-secondary/40 p-4">
           <p className="text-xs text-muted-foreground">Vendidos</p>
           <p className="mt-1 text-2xl font-bold">{paid}</p>
@@ -75,6 +75,10 @@ export default async function AdminRifaPage() {
         <div className="rounded-2xl border border-border bg-secondary/40 p-4">
           <p className="text-xs text-muted-foreground">Arrecadado</p>
           <p className="mt-1 text-xl font-bold">{formatBRL(totalArrecadado)}</p>
+        </div>
+        <div className="rounded-2xl border border-border bg-secondary/40 p-4">
+          <p className="text-xs text-muted-foreground">Visitas</p>
+          <p className="mt-1 text-2xl font-bold">{raffle.viewCount}</p>
         </div>
       </div>
 
