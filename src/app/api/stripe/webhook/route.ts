@@ -80,7 +80,14 @@ export async function POST(request: Request) {
         }
         // Subscription checkout: create subscription + user
         if (session.mode === 'subscription') {
-          await c.handleSubscriptionWebhook.handleCheckoutCompleted(session);
+          const subRef = session.subscription;
+          const stripeSubId = typeof subRef === 'string' ? subRef : subRef?.id;
+          if (!stripeSubId) {
+            log.error('webhook.subscription_checkout.no_subscription', { sessionId: session.id });
+            break;
+          }
+          const subscription = await getStripe().subscriptions.retrieve(stripeSubId);
+          await c.handleSubscriptionWebhook.handleCheckoutCompleted(session, subscription);
         }
         break;
       }

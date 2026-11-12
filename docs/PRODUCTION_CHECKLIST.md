@@ -14,7 +14,7 @@
 ## Stripe
 - [ ] Conta em modo live, dados bancários verificados
 - [ ] Produto + Price BRL criados (live mode)
-- [ ] Webhook de produção com `checkout.session.completed`
+- [ ] Webhook de produção com `checkout.session.completed` + eventos `customer.subscription.*` e `invoice.payment_*` (ver SETUP_STRIPE.md)
 - [ ] `STRIPE_WEBHOOK_SECRET` de produção na Vercel
 - [ ] Compra real de teste (valor baixo) executada e reembolsada
 

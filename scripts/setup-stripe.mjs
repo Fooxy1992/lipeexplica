@@ -1,7 +1,7 @@
 /**
  * Configura o Stripe da plataforma (idempotente):
  * 1. Cria o Product + Price (BRL) do livro, se não existirem
- * 2. Cria o webhook endpoint de produção (checkout.session.completed)
+ * 2. Cria o webhook endpoint de produção (ou completa os eventos que faltam)
  * 3. Grava ids/secret em scripts/stripe-setup.out.json (NÃO commitar)
  *
  * Uso: node scripts/setup-stripe.mjs
@@ -54,6 +54,18 @@ if (!price) {
   console.log("price já existia:", price.id);
 }
 
+// Eventos que src/app/api/stripe/webhook/route.ts trata.
+const WEBHOOK_EVENTS = [
+  "checkout.session.completed",
+  "customer.subscription.created",
+  "customer.subscription.updated",
+  "customer.subscription.deleted",
+  "customer.subscription.paused",
+  "customer.subscription.resumed",
+  "invoice.payment_succeeded",
+  "invoice.payment_failed",
+];
+
 // --- Webhook endpoint ------------------------------------------------------------
 const existing = (await stripe.webhookEndpoints.list({ limit: 50 })).data.find(
   (w) => w.url === WEBHOOK_URL,
@@ -63,7 +75,7 @@ let webhookId;
 if (!existing) {
   const wh = await stripe.webhookEndpoints.create({
     url: WEBHOOK_URL,
-    enabled_events: ["checkout.session.completed"],
+    enabled_events: WEBHOOK_EVENTS,
     description: "lipeexplica plataforma",
   });
   webhookSecret = wh.secret; // só disponível na criação
@@ -72,6 +84,15 @@ if (!existing) {
 } else {
   webhookId = existing.id;
   console.log("webhook já existia:", existing.id, "(secret não recuperável — veja dashboard)");
+  const missing = WEBHOOK_EVENTS.filter(
+    (e) => !existing.enabled_events.includes(e) && !existing.enabled_events.includes("*"),
+  );
+  if (missing.length > 0) {
+    await stripe.webhookEndpoints.update(existing.id, {
+      enabled_events: [...new Set([...existing.enabled_events, ...WEBHOOK_EVENTS])],
+    });
+    console.log("webhook: eventos adicionados:", missing.join(", "));
+  }
 }
 
 writeFileSync(
