@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { z } from "zod";
 import {
   userScopedContainer,
@@ -8,6 +9,7 @@ import {
   logger,
 } from "@/infrastructure/di/container";
 import { DomainError } from "@/core/domain/errors/domain-error";
+import { getStripe } from "@/infrastructure/stripe/stripe-client";
 
 /** Every admin action re-validates the admin flag server-side. */
 async function assertAdmin(): Promise<string> {
@@ -363,4 +365,30 @@ export async function deleteLead(formData: FormData) {
 
   logger.info("admin.lead_deleted", { adminId, leadId });
   revalidatePath("/admin/leads");
+}
+
+/* ----------------------------------------------------------- ASSINATURAS -- */
+
+/**
+ * Busca todas as assinaturas no Stripe e grava/atualiza na tabela
+ * subscriptions. Recupera assinaturas pagas que o webhook não gravou.
+ */
+export async function syncStripeSubscriptions() {
+  await assertAdmin();
+  const c = adminContainer();
+
+  let synced = 0;
+  let skipped = 0;
+  for await (const sub of getStripe().subscriptions.list({
+    status: "all",
+    limit: 100,
+    expand: ["data.customer"],
+  })) {
+    if (await c.handleSubscriptionWebhook.syncFromStripe(sub)) synced++;
+    else skipped++;
+  }
+
+  logger.info("admin.subscriptions_synced", { synced, skipped });
+  revalidatePath("/admin/subscriptions");
+  redirect(`/admin/subscriptions?sync=${synced}&ignoradas=${skipped}`);
 }

@@ -4,11 +4,17 @@ import { createSupabaseAdminClient, createSupabaseServerClient } from '@/infrast
 import { SupabaseProfileRepository } from '@/infrastructure/repositories/supabase-profile-repository';
 import { SupabaseSubscriptionRepository } from '@/infrastructure/repositories/supabase-subscription-repository';
 import { formatDate } from '@/lib/utils';
+import { syncStripeSubscriptions } from '@/app/admin/actions';
 
 export const metadata: Metadata = { title: 'Admin — Assinaturas' };
 export const dynamic = 'force-dynamic';
 
-export default async function AdminSubscriptionsPage() {
+export default async function AdminSubscriptionsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ sync?: string; ignoradas?: string }>;
+}) {
+  const { sync, ignoradas } = await searchParams;
   const db = await createSupabaseServerClient();
   const {
     data: { user },
@@ -29,7 +35,24 @@ export default async function AdminSubscriptionsPage() {
 
   return (
     <div className="mx-auto max-w-5xl px-6 py-10">
-      <h1 className="font-display text-2xl font-semibold text-foreground">Assinaturas</h1>
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <h1 className="font-display text-2xl font-semibold text-foreground">Assinaturas</h1>
+        <form action={syncStripeSubscriptions}>
+          <button
+            type="submit"
+            className="rounded-full border border-border px-4 py-2 text-sm font-semibold text-foreground hover:bg-muted/40"
+          >
+            Sincronizar com Stripe
+          </button>
+        </form>
+      </div>
+
+      {sync !== undefined && (
+        <p className="mt-4 rounded-xl border border-border bg-card px-4 py-3 text-sm text-muted-foreground">
+          Sincronização concluída: {sync} assinatura(s) gravada(s)
+          {ignoradas && ignoradas !== '0' ? `, ${ignoradas} ignorada(s) (não pagas ou sem produto)` : ''}.
+        </p>
+      )}
 
       <div className="mt-6 grid grid-cols-3 gap-4">
         {[

@@ -109,6 +109,40 @@ export class HandleSubscriptionWebhook {
     this.logger.info('sub_webhook.subscription.upserted', { subId: sub.id, status: sub.status });
   }
 
+  /**
+   * Reconciles one Stripe subscription into the local table (used by the
+   * admin "Sincronizar com Stripe" action to recover subscriptions the
+   * webhook missed). Expects `sub.customer` expanded so the email is known.
+   * Returns false when the subscription was skipped.
+   */
+  async syncFromStripe(sub: Stripe.Subscription): Promise<boolean> {
+    const productId = sub.metadata?.product_id;
+    const customer = sub.customer;
+    const email =
+      typeof customer === 'object' && !customer.deleted ? customer.email : null;
+
+    if (!productId || !email) {
+      this.logger.warn('sub_sync.skipped', { subId: sub.id, reason: 'missing_product_or_email' });
+      return false;
+    }
+    // Never paid → nothing to show or grant.
+    if (sub.status === 'incomplete' || sub.status === 'incomplete_expired') return false;
+
+    const product = await this.products.findById(productId);
+    if (!product) {
+      this.logger.warn('sub_sync.skipped', { subId: sub.id, reason: 'product_not_found' });
+      return false;
+    }
+
+    const stripeCustomerId = typeof customer === 'string' ? customer : customer.id;
+    const user = await this.auth.findOrCreateUserByEmail(email);
+    await this.subscriptions.upsert(
+      this.toUpsertInput(sub, user.id, productId, stripeCustomerId),
+    );
+    this.logger.info('sub_sync.upserted', { subId: sub.id, status: sub.status });
+    return true;
+  }
+
   private toUpsertInput(
     sub: Stripe.Subscription,
     userId: string,
