@@ -25,7 +25,11 @@ where slug = 'dinamicas-jiu-jitsu-infantil';
 
 1. **Developers → Webhooks → Add endpoint**
    - URL: `https://lipeexplica.com/api/stripe/webhook`
-   - Eventos: `checkout.session.completed`
+   - Eventos: `checkout.session.completed`, `customer.subscription.created`,
+     `customer.subscription.updated`, `customer.subscription.deleted`,
+     `customer.subscription.paused`, `customer.subscription.resumed`,
+     `invoice.payment_succeeded`, `invoice.payment_failed`
+     (sem os eventos de assinatura, cancelamentos e renovações não chegam ao banco)
 2. Copie o **Signing secret** (`whsec_...`) → `STRIPE_WEBHOOK_SECRET`.
 
 Local:
